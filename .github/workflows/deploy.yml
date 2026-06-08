@@ -1,0 +1,50 @@
+name: Deploy Frontend to Production
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy to VPS
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_IP }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script_stop: true
+          script: |
+            set -e
+
+            PROJECT_DIR="/var/www/omar-admin-dashboard"
+            cd "$PROJECT_DIR"
+
+            echo "==> Pulling latest changes..."
+            git fetch origin main
+            git reset --hard origin/main
+
+            echo "==> Building and deploying container..."
+            docker compose down --remove-orphans
+            docker compose up -d --build
+
+            echo "==> Waiting for frontend to start..."
+            sleep 5
+
+            echo "==> Health check..."
+            if docker compose ps frontend | grep -q "Up"; then
+              echo "✅ Frontend is running"
+            else
+              echo "❌ Frontend failed to start"
+              docker compose logs --tail=30 frontend
+              exit 1
+            fi
+
+            echo "==> Pruning old images..."
+            docker image prune -f
+
+            echo "✅ Frontend deployment complete!"

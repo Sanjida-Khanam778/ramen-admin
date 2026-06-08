@@ -1,0 +1,14 @@
+services:
+  frontend:
+    build: .
+    container_name: ober_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    networks:
+      - ober_network
+
+networks:
+  ober_network:
+    external: true
+    name: o-ber_ober_network
