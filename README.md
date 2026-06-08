@@ -1,3 +1,1 @@
-# O-Ber Admin Dashboard
-
-Test update for PR verification.
+# RM Follow Admin Dashboard
