@@ -3,7 +3,7 @@ import { useState } from "react";
 const initialDrivers = [
   { id: 1, name: "John Parker", email: "john.parker@email.com", trips: 150, earnings: 5000, paid: 500, pending: 500, status: "paid", lastPayment: "2026-03-05" },
   { id: 2, name: "Maria Garcia", email: "maria.garcia@email.com", trips: 200, earnings: 7000, paid: 1000, pending: 400, status: "pending", lastPayment: "2026-02-20" },
-  { id: 3, name: "Kevin Lee", email: "kevin.lee@email.com", trips: 100, earnings: 3000, paid: 300, pending: 300, status: "overdue", lastPayment: "2026-01-15" },
+  { id: 3, name: "Kevin Lee", email: "kevin.lee@email.com", trips: 100, earnings: 3000, paid: 300, pending: 300, status: "suspended", lastPayment: "2026-01-15" },
   { id: 4, name: "Sophie Turner", email: "sophie.turner@email.com", trips: 50, earnings: 1500, paid: 150, pending: 150, status: "paid", lastPayment: "2026-03-01" },
 ];
 
@@ -15,7 +15,7 @@ function StatusBadge({ status }) {
   const map = {
     paid: "bg-emerald-50 text-emerald-700 border border-emerald-200",
     pending: "bg-amber-50 text-amber-700 border border-amber-200",
-    overdue: "bg-rose-50 text-rose-600 border border-rose-200",
+    suspended: "bg-rose-50 text-rose-600 border border-rose-200",
   };
   return (
     <span className={`text-xs font-semibold px-2.5 py-1 rounded-full capitalize ${map[status] || map.pending}`}>
@@ -89,7 +89,7 @@ function DriverDetailModal({ driver, serviceRate, onClose, onSuspend, onSendRemi
           <button onClick={() => { onSendReminder(driver); onClose(); }}
             className="flex-1 flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold py-2.5 rounded-lg transition-colors">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-            Send Payment Reminder
+            Send Message
           </button>
           <button onClick={() => { onSuspend(driver.id); onClose(); }}
             className="flex-1 flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-700 text-white text-sm font-semibold py-2.5 rounded-lg transition-colors">
@@ -175,7 +175,7 @@ export default function RateCommissionManagement() {
 
   const cancelEdit = () => setIsEditing(false);
 
-  const suspendDriver = (id) => setDrivers((prev) => prev.map((d) => d.id === id ? { ...d, status: "overdue" } : d));
+  const suspendDriver = (id) => setDrivers((prev) => prev.map((d) => d.id === id ? { ...d, status: "suspended" } : d));
 
   const filteredDrivers = drivers.filter((d) => {
     if (filter === "All") return true;
@@ -186,7 +186,7 @@ export default function RateCommissionManagement() {
   const totalEarnings = drivers.reduce((a, d) => a + d.earnings, 0);
   const totalPlatformCharge = drivers.reduce((a, d) => a + calcCharge(d.earnings, serviceCharge), 0);
   const totalPending = drivers.reduce((a, d) => a + d.pending, 0);
-  const pendingDriversCount = drivers.filter((d) => d.status === "pending" || d.status === "overdue").length;
+  const pendingDriversCount = drivers.filter((d) => d.status === "pending" || d.status === "suspended").length;
 
   return (
     <div className="min-h-screen bg-slate-50 p-8 font-sans">
@@ -304,7 +304,7 @@ export default function RateCommissionManagement() {
 
       {/* Filter Tabs */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-3 mb-4 flex gap-1.5">
-        {["All", "Paid", "Pending", "Overdue"].map((f) => (
+        {["All", "Paid", "Pending", "Suspended"].map((f) => (
           <button key={f} onClick={() => setFilter(f)}
             className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-colors ${filter === f ? "bg-blue-900 text-white" : "text-slate-600 hover:bg-slate-100"}`}>
             {f}
