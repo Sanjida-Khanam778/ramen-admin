@@ -24,7 +24,7 @@ export default function Sidebar() {
         }}>
       {/* Ober Logo */}
       <div className="mt-12 flex justify-center">
-      <img src={logo} className="h-20" alt="Ober Logo" />
+      <img src={logo} className="w-20" alt="Ober Logo" />
       </div>
 
       <nav className="flex-1 font-nunito mt-10">
