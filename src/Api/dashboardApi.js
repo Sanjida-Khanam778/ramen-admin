@@ -28,7 +28,7 @@ export const authApi = api.injectEndpoints({
 
     getUserDetails: builder.query({
       query: (userId) => ({
-        url: `adminapi/user/${userId}/`,
+        url: `/admin/users/${userId}/`,
         method: "GET",
       }),
       providesTags: (result, error, userId) => [{ type: "users", id: userId }],
@@ -281,13 +281,85 @@ export const authApi = api.injectEndpoints({
       invalidatesTags: ["users"],
     }),
 
-    // Fallback/all users (existing)
     getUsers: builder.query({
-      query: () => ({
-        url: `platform/admin/users/`,
+      query: (params = {}) => {
+        const queryParams = new URLSearchParams();
+
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== "") {
+            queryParams.set(key, value);
+          }
+        });
+
+        const qs = queryParams.toString();
+
+        return {
+          url: `/admin/users/${qs ? `?${qs}` : ""}`,
+          method: "GET",
+        };
+      },
+      providesTags: ["users"],
+    }),
+
+    sendUserEmail: builder.mutation({
+      query: ({ userId, email, subject, message }) => ({
+        url: `/admin/users/${userId}/send-email/`,
+        method: "POST",
+        body: { email, subject, message },
+      }),
+    }),
+
+    getAdminDrivers: builder.query({
+      query: (params = {}) => {
+        const queryParams = new URLSearchParams();
+
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== "") {
+            queryParams.set(key, value);
+          }
+        });
+
+        const qs = queryParams.toString();
+
+        return {
+          url: `/admin/drivers/${qs ? `?${qs}` : ""}`,
+          method: "GET",
+        };
+      },
+      providesTags: ["drivers"],
+    }),
+
+    getAdminDriverDetails: builder.query({
+      query: (driverId) => ({
+        url: `/admin/drivers/${driverId}/`,
         method: "GET",
       }),
-      providesTags: ["users"],
+      providesTags: (result, error, driverId) => [
+        { type: "drivers", id: driverId },
+      ],
+    }),
+
+    sendDriverEmail: builder.mutation({
+      query: ({ driverId, email, subject, message }) => ({
+        url: `/admin/drivers/${driverId}/send-email/`,
+        method: "POST",
+        body: { email, subject, message },
+      }),
+    }),
+
+    updateDriverKyc: builder.mutation({
+      query: ({ driverId, kyc_status, rejection_reason }) => ({
+        url: `/admin/drivers/${driverId}/kyc/`,
+        method: "PATCH",
+        body: {
+          kyc_status,
+          ...(rejection_reason ? { rejection_reason } : {}),
+        },
+      }),
+      invalidatesTags: (result, error, { driverId }) => [
+        "drivers",
+        { type: "drivers", id: driverId },
+      ],
     }),
 
     platformAdminProfile: builder.query({
@@ -319,6 +391,11 @@ export const {
   useGetPlatformDriverByIdQuery,
   useApprovePlatformDriverMutation,
   useGetUsersQuery,
+  useSendUserEmailMutation,
+  useGetAdminDriversQuery,
+  useGetAdminDriverDetailsQuery,
+  useSendDriverEmailMutation,
+  useUpdateDriverKycMutation,
   useGetUserDetailsQuery,
   useGetUserStatsQuery,
   useDeleteUserMutation,

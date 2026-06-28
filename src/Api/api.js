@@ -1,7 +1,7 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 const baseQuery = fetchBaseQuery({
-  baseUrl: "https://api.rydeislands.com/api/v1/",
+  baseUrl: "https://rameen300.kawsarthedebugger.site/api/v1",
   prepareHeaders: (headers, { getState }) => {
     // Add stored access token so protected endpoints succeed
     const token = getState()?.auth?.access;
@@ -16,6 +16,6 @@ const baseQuery = fetchBaseQuery({
 export const api = createApi({
   reducerPath: "baseApi",
   baseQuery: baseQuery,
-  tagTypes: ["users", "auth", "stats"],
+  tagTypes: ["users", "drivers", "auth", "stats"],
   endpoints: () => ({}),
 });

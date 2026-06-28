@@ -1,40 +1,53 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ArrowLeft,
-  Mail,
-  Phone,
   Calendar,
-  MapPin,
   CheckCircle,
-  Star,
   DollarSign,
   Loader2,
+  Mail,
+  MapPin,
+  Phone,
   Send,
+  Star,
   X,
 } from "lucide-react";
-import { useBlockPlatformUserMutation } from "../../Api/dashboardApi";
+import {
+  useBlockPlatformUserMutation,
+  useGetUserDetailsQuery,
+  useSendUserEmailMutation,
+} from "../../Api/dashboardApi";
 import userAvatar from "../../assets/images/userAvatar.png";
 import driverAvatar from "../../assets/images/driverAvatar.png";
 import toast from "react-hot-toast";
 
-// ─── Send Email Modal ─────────────────────────────────────────────────────────
-function SendEmailModal({ email, name, onClose }) {
-  const [subject, setSubject] = useState(
-    `Platform Charge Payment Reminder - ${name}`
-  );
+function SendEmailModal({ userId, email, name, onClose }) {
+  const [subject, setSubject] = useState(`Platform update - ${name}`);
   const [message, setMessage] = useState("");
-  const [sending, setSending] = useState(false);
+  const [sendUserEmail, { isLoading: sending }] = useSendUserEmailMutation();
 
   const handleSend = async () => {
+    if (!subject.trim()) {
+      toast.error("Please enter a subject");
+      return;
+    }
     if (!message.trim()) {
       toast.error("Please enter a message");
       return;
     }
-    setSending(true);
-    await new Promise((r) => setTimeout(r, 800));
-    setSending(false);
-    toast.success(`Email sent to ${email}`);
-    onClose();
+
+    try {
+      const result = await sendUserEmail({
+        userId,
+        email,
+        subject,
+        message,
+      }).unwrap();
+      toast.success(result?.message || `Email sent to ${email}`);
+      onClose();
+    } catch (error) {
+      toast.error(error?.data?.message || "Failed to send email");
+    }
   };
 
   return (
@@ -51,7 +64,9 @@ function SendEmailModal({ email, name, onClose }) {
         </div>
         <div className="px-6 py-5 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1.5">To:</label>
+            <label className="block text-sm font-medium text-gray-600 mb-1.5">
+              To:
+            </label>
             <input
               readOnly
               value={email}
@@ -59,7 +74,9 @@ function SendEmailModal({ email, name, onClose }) {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1.5">Subject:</label>
+            <label className="block text-sm font-medium text-gray-600 mb-1.5">
+              Subject:
+            </label>
             <input
               type="text"
               value={subject}
@@ -68,7 +85,9 @@ function SendEmailModal({ email, name, onClose }) {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1.5">Message:</label>
+            <label className="block text-sm font-medium text-gray-600 mb-1.5">
+              Message:
+            </label>
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
@@ -78,13 +97,17 @@ function SendEmailModal({ email, name, onClose }) {
             />
           </div>
         </div>
-        <div className="flex items-center gap-3 px-6 py-4 bg-gray/50 border-t border-gray/50">
+        <div className="flex items-center gap-3 px-6 py-4 bg-gray-50 border-t border-gray/50">
           <button
             onClick={handleSend}
             disabled={sending}
             className="flex items-center gap-2 px-6 py-2.5 bg-[#1B2A5E] text-white rounded-xl text-sm font-semibold hover:bg-[#162347] transition-colors disabled:opacity-60 cursor-pointer"
           >
-            {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+            {sending ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Send className="w-4 h-4" />
+            )}
             Send Email
           </button>
           <button
@@ -99,12 +122,13 @@ function SendEmailModal({ email, name, onClose }) {
   );
 }
 
-// ─── Stat Card ────────────────────────────────────────────────────────────────
-function StatCard({ icon: Icon, iconBg, iconColor, label, value }) {
+function StatCard({ icon, iconBg, iconColor, label, value }) {
+  const IconComponent = icon;
+
   return (
     <div className="bg-white rounded-xl border border-gray/50 shadow-sm p-5 flex items-center gap-4">
       <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${iconBg}`}>
-        <Icon className={`w-5 h-5 ${iconColor}`} />
+        <IconComponent className={`w-5 h-5 ${iconColor}`} />
       </div>
       <div>
         <div className="text-xs text-gray-500">{label}</div>
@@ -114,15 +138,37 @@ function StatCard({ icon: Icon, iconBg, iconColor, label, value }) {
   );
 }
 
-// ─── User Details ─────────────────────────────────────────────────────────────
-// Receives `user` — the full user object passed from UserTable (works with both
-// real API data and static mock users — no additional fetch needed).
 const UserDetails = ({ user, onBack }) => {
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [blockingUser, setBlockingUser] = useState(false);
   const [localStatus, setLocalStatus] = useState(user?.status || "Active");
 
+  const selectedUserId = user?.id || user?.user_id;
   const [blockUser] = useBlockPlatformUserMutation();
+  const {
+    data: userDetails,
+    isLoading: loadingDetails,
+    isError: detailsError,
+  } = useGetUserDetailsQuery(selectedUserId, { skip: !selectedUserId });
+
+  const detailsUser = userDetails
+    ? {
+        ...user,
+        ...userDetails,
+        full_name: userDetails.name || user.full_name,
+        rating: userDetails.average_rating,
+        status: userDetails.is_active ? "Active" : "Suspended",
+        is_driver: userDetails.user_type === "driver",
+      }
+    : user;
+
+  useEffect(() => {
+    if (detailsUser?.is_active !== undefined) {
+      setLocalStatus(detailsUser.is_active ? "Active" : "Suspended");
+    } else if (detailsUser?.status) {
+      setLocalStatus(detailsUser.status);
+    }
+  }, [detailsUser?.is_active, detailsUser?.status]);
 
   if (!user) {
     return (
@@ -135,25 +181,25 @@ const UserDetails = ({ user, onBack }) => {
     );
   }
 
-  const fullName = user.full_name || user.name || "User";
-  const email = user.email || "";
-  const phone = user.phone_number || user.phone || "";
-  const isDriver = !!user.is_driver;
-  const userId = user.user_id || user.id || "—";
-  const avatar = user.profile_picture || user.avatar || (isDriver ? driverAvatar : userAvatar);
+  const fullName = detailsUser.full_name || detailsUser.name || "User";
+  const email = detailsUser.email || "";
+  const phone = detailsUser.phone_number || detailsUser.phone || "";
+  const isDriver = detailsUser.user_type === "driver" || !!detailsUser.is_driver;
+  const userId = detailsUser.id || detailsUser.user_id || "-";
+  const avatar = detailsUser.profile_picture || detailsUser.avatar || (isDriver ? driverAvatar : userAvatar);
 
   const isBlocked =
     localStatus.toLowerCase() === "suspended" ||
     localStatus.toLowerCase() === "blocked" ||
     localStatus.toLowerCase() === "banned";
 
-  const totalTrips = user.total_trips ?? user.driver_total_trip_count ?? null;
-  const completedTrips = user.completed_trips ?? user.driver_completed_trip_count ?? null;
-  const rating = user.rating ?? user.driver_ratings ?? null;
-  const earnings = user.total_earnings ?? null;
+  const totalTrips = detailsUser.total_trips ?? detailsUser.driver_total_trip_count ?? null;
+  const completedTrips = detailsUser.completed_trips ?? detailsUser.driver_completed_trip_count ?? null;
+  const rating = detailsUser.average_rating ?? detailsUser.rating ?? detailsUser.driver_ratings ?? null;
+  const earnings = detailsUser.total_earnings ?? null;
 
-  const dateJoined = user.date_joined
-    ? new Date(user.date_joined).toLocaleDateString("en-GB", {
+  const dateJoined = detailsUser.date_joined
+    ? new Date(detailsUser.date_joined).toLocaleDateString("en-GB", {
         day: "2-digit",
         month: "2-digit",
         year: "numeric",
@@ -164,20 +210,17 @@ const UserDetails = ({ user, onBack }) => {
     const willBlock = !isBlocked;
     const newStatus = willBlock ? "Suspended" : "Active";
 
-    // Optimistic update
     setLocalStatus(newStatus);
 
-    // Try real API, silently ignore if not available (mock mode)
     try {
       setBlockingUser(true);
-      const id = user.user_id || user.id;
-      if (id && typeof id === "number") {
-        await blockUser({ userId: id, status: willBlock }).unwrap();
+      if (userId && userId !== "-") {
+        await blockUser({ userId, status: willBlock }).unwrap();
       }
       toast.success(willBlock ? "User suspended." : "User activated.");
     } catch {
-      // For static mock users, just show success (no real ID to block)
-      toast.success(willBlock ? "User suspended." : "User activated.");
+      setLocalStatus(isBlocked ? "Suspended" : "Active");
+      toast.error("Failed to update user status.");
     } finally {
       setBlockingUser(false);
     }
@@ -187,6 +230,7 @@ const UserDetails = ({ user, onBack }) => {
     <>
       {showEmailModal && (
         <SendEmailModal
+          userId={userId}
           email={email}
           name={fullName}
           onClose={() => setShowEmailModal(false)}
@@ -194,7 +238,18 @@ const UserDetails = ({ user, onBack }) => {
       )}
 
       <div className="p-8 max-w-7xl mx-auto">
-        {/* Page header */}
+        {loadingDetails && (
+          <div className="mb-5 flex items-center gap-2 text-sm text-gray-500">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            Loading latest user details...
+          </div>
+        )}
+        {detailsError && (
+          <div className="mb-5 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
+            Failed to load latest user details. Showing selected row data.
+          </div>
+        )}
+
         <div className="flex items-center gap-3 mb-8">
           <button
             onClick={onBack}
@@ -203,34 +258,28 @@ const UserDetails = ({ user, onBack }) => {
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
-            <p className="text-xl font-semibold text-gray-400">
-              User Profile
-            </p>
-            <h1 className="text-sm text-[#4A5565]">
-              View and manage user details
-            </h1>
+            <p className="text-xl font-semibold text-gray-400">User Profile</p>
+            <h1 className="text-sm text-[#4A5565]">View and manage user details</h1>
           </div>
         </div>
 
-        {/* Profile Card */}
         <div className="bg-white rounded-2xl border border-gray/50 shadow-sm p-6 mb-5">
           <div className="flex items-start gap-5">
-            {/* Avatar */}
             <img
               src={avatar}
               alt={fullName}
               className="w-20 h-20 rounded-full object-cover border-2 border-gray/50 shadow-sm flex-shrink-0"
-              onError={(e) => { e.target.src = isDriver ? driverAvatar : userAvatar; }}
+              onError={(e) => {
+                e.target.src = isDriver ? driverAvatar : userAvatar;
+              }}
             />
 
-            {/* Info */}
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-4 flex-wrap">
                 <div>
                   <h2 className="text-lg font-semibold text-gray-900">{fullName}</h2>
                   <p className="text-sm text-[#4A5565] mt-0.5">ID: {userId}</p>
                 </div>
-                {/* Status badge */}
                 <span
                   className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
                     isBlocked ? "bg-red-50 text-red-600" : "bg-green-50 text-green-600"
@@ -240,7 +289,6 @@ const UserDetails = ({ user, onBack }) => {
                 </span>
               </div>
 
-              {/* Contact details row */}
               <div className="mt-4 grid grid-cols-2 gap-x-5 gap-y-2 text-sm text-[#4A5565]">
                 {email && (
                   <span className="flex items-center gap-1.5">
@@ -263,35 +311,34 @@ const UserDetails = ({ user, onBack }) => {
                     isDriver ? "bg-blue-50 text-blue-600" : "bg-purple-50 text-purple-600"
                   }`}
                 >
-                  {isDriver ? "driver" : "passenger"}
+                  {detailsUser.user_type || (isDriver ? "driver" : "passenger")}
                 </span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Stats Grid */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
           <StatCard
             icon={MapPin}
             iconBg="bg-blue-50"
             iconColor="text-blue-500"
             label="Total Trips"
-            value={totalTrips !== null ? totalTrips.toLocaleString() : "—"}
+            value={totalTrips !== null ? totalTrips.toLocaleString() : "-"}
           />
           <StatCard
             icon={CheckCircle}
             iconBg="bg-green-50"
             iconColor="text-green-500"
             label="Completed Trips"
-            value={completedTrips !== null ? completedTrips.toLocaleString() : "—"}
+            value={completedTrips !== null ? completedTrips.toLocaleString() : "-"}
           />
           <StatCard
             icon={Star}
             iconBg="bg-yellow-50"
             iconColor="text-yellow-500"
             label="Rating"
-            value={rating !== null ? parseFloat(rating).toFixed(1) : "—"}
+            value={rating !== null ? parseFloat(rating).toFixed(1) : "-"}
           />
           <StatCard
             icon={DollarSign}
@@ -304,12 +351,11 @@ const UserDetails = ({ user, onBack }) => {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                   })}`
-                : "—"
+                : "-"
             }
           />
         </div>
 
-        {/* Admin Actions */}
         <div className="bg-white rounded-2xl border border-gray/50 shadow-sm p-6">
           <h3 className="text-sm font-semibold text-gray-700 mb-4">Admin Actions</h3>
           <div className="flex items-center flex-wrap gap-3">
@@ -328,7 +374,8 @@ const UserDetails = ({ user, onBack }) => {
 
             <button
               onClick={() => setShowEmailModal(true)}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium bg-white border border-gray/50 text-gray-700 hover:bg-gray-50 transition-all cursor-pointer shadow-sm"
+              disabled={!email || !userId || userId === "-"}
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium bg-white border border-gray/50 text-gray-700 hover:bg-gray-50 transition-all cursor-pointer shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <Mail className="w-4 h-4" />
               Send Email

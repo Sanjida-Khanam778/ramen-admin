@@ -1,14 +1,13 @@
-import { setCredentials } from "../features/authSlice";
 import { api } from "./api";
 
 export const authApi = api.injectEndpoints({
   endpoints: (builder) => ({
     login: builder.mutation({
       query: (data) => ({
-        url: "/auth/login/",
+        url: "/admin/login/",
         method: "POST",
         body: {
-          login_id: data.email || data.login_id,
+          email: data.email,
           password: data.password,
         },
       }),

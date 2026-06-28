@@ -12,6 +12,7 @@ const initialState = {
   },
   access: null,
   refresh: null,
+  user_type: null,
   isAuthenticated: false,
 };
 
@@ -28,6 +29,10 @@ export const authSlice = createSlice({
         user_initials,
         is_rider,
         is_driver,
+        access,
+        refresh,
+        user_type,
+        is_active,
         tokens,
       } = action.payload;
  
@@ -43,18 +48,18 @@ export const authSlice = createSlice({
       state.user.is_rider = is_rider || false;
       state.user.is_driver = is_driver || false;
 
-      if (tokens) {
-        state.access = tokens.access || null;
-        state.refresh = tokens.refresh || null;
-      }
+      state.access = access || tokens?.access || null;
+      state.refresh = refresh || tokens?.refresh || null;
+      state.user_type = user_type || null;
 
-      state.isAuthenticated = true;
+      state.isAuthenticated = Boolean(state.access) && is_active !== false;
     },
 
     logout: (state) => {
       state.isAuthenticated = false;
       state.access = null;
       state.refresh = null;
+      state.user_type = null;
       state.user = {
         user_id: "",
         full_name: null,

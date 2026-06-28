@@ -3,19 +3,34 @@
 import { useState } from "react";
 import { Eye, EyeOff, Mail, Lock, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+import { useDispatch } from "react-redux";
+import { setCredentials } from "../../features/authSlice";
+import { useLoginMutation } from "../../Api/authApi";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [login, { isLoading }] = useLoginMutation();
   const handleLogin = async (e) => {
     e.preventDefault();
-    setIsLoading(true);
-    // Add your login logic here
-    setTimeout(() => setIsLoading(false), 1000);
-    navigate("/");
+    const data = {
+      email: email,
+      password: password,
+    };
+    try {
+      const res = await login(data).unwrap();
+      dispatch(setCredentials(res));
+      toast.success("Login successful!");
+      setEmail("");
+      setPassword("");
+      navigate("/");
+    } catch (error) {
+      toast.error(error.data?.message || "Login failed");
+    }
   };
 
   return (
