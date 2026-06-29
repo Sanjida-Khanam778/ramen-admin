@@ -66,6 +66,26 @@ export const couponApi = api.injectEndpoints({
       }),
       invalidatesTags: ["coupons"],
     }),
+
+    // GET /admin/settings/ — fetch all platform settings
+    getSettings: builder.query({
+      query: () => ({
+        url: `admin/settings/`,
+        method: "GET",
+      }),
+      providesTags: ["settings"],
+    }),
+
+    // POST /admin/settings/ — upsert a single setting by key
+    // body: { key, value, description }
+    updateSetting: builder.mutation({
+      query: (data) => ({
+        url: `admin/settings/`,
+        method: "POST",
+        body: data,
+      }),
+      invalidatesTags: ["settings"],
+    }),
   }),
 });
 
@@ -76,4 +96,6 @@ export const {
   useUpdateCouponMutation,
   useDisableCouponMutation,
   useDeleteCouponMutation,
+  useGetSettingsQuery,
+  useUpdateSettingMutation,
 } = couponApi;

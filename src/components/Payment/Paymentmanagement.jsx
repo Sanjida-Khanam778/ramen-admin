@@ -130,7 +130,7 @@ export default function PaymentManagement() {
     <div className="min-h-screen bg-slate-50 p-8 font-sans">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Payment Management</h1>
+        <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Withdraw Management</h1>
         <p className="text-sm text-slate-500 mt-0.5">Manage ride payments and driver earnings</p>
       </div>
 

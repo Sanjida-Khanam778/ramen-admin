@@ -78,7 +78,7 @@ export default function Sidebar() {
               className="flex items-center mx-4 rounded-2xl px-6 py-4"
             >
               <LuCreditCard className="mr-3 text-2xl" />
-              Payment Management
+              Withdraw Management
             </NavLink>
           </li>
           <li>
@@ -90,7 +90,7 @@ export default function Sidebar() {
               Complaints
             </NavLink>
           </li>
-          <li>
+          {/* <li>
             <NavLink
               to={"/settings"}
               className="flex items-center mx-4 rounded-2xl px-6 py-4"
@@ -98,7 +98,7 @@ export default function Sidebar() {
               <LuSettings className="mr-3 text-2xl" /> 
               Settings
             </NavLink>
-          </li>
+          </li> */}
         </ul>
       </nav>
       <Link to={"/login"}>

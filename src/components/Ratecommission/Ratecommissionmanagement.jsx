@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useUpdateSettingMutation } from "../../Api/couponApi"; // adjust path as needed
 
 const initialDrivers = [
   { id: 1, name: "John Parker", email: "john.parker@email.com", trips: 150, earnings: 5000, paid: 500, pending: 500, status: "paid", lastPayment: "2026-03-05" },
@@ -58,12 +59,9 @@ function DriverDetailModal({ driver, serviceRate, onClose, onSuspend, onSendRemi
           </div>
           <div>
             <p className="text-xs text-slate-400 mb-0.5">Status</p>
-            <div className="flex items-center gap-1.5">
-              <StatusBadge status={driver.status} />
-            </div>
+            <div className="flex items-center gap-1.5"><StatusBadge status={driver.status} /></div>
           </div>
         </div>
-
         <div>
           <p className="text-sm font-bold text-slate-800 mb-3">Payment Breakdown</p>
           <div className="space-y-2">
@@ -72,7 +70,6 @@ function DriverDetailModal({ driver, serviceRate, onClose, onSuspend, onSendRemi
             <div className="flex justify-between text-sm"><span className="text-slate-500">Last Payment Date</span><span className="text-slate-700 font-medium">{driver.lastPayment}</span></div>
           </div>
         </div>
-
         {driver.pending > 0 && (
           <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-3">
             <svg className="w-5 h-5 text-amber-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -84,7 +81,6 @@ function DriverDetailModal({ driver, serviceRate, onClose, onSuspend, onSendRemi
             </div>
           </div>
         )}
-
         <div className="flex gap-3 pt-1">
           <button onClick={() => { onSendReminder(driver); onClose(); }}
             className="flex-1 flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold py-2.5 rounded-lg transition-colors">
@@ -105,29 +101,21 @@ function DriverDetailModal({ driver, serviceRate, onClose, onSuspend, onSendRemi
 function EmailModal({ driver, onClose }) {
   const [message, setMessage] = useState("");
   const [sent, setSent] = useState(false);
-
-  const handleSend = () => {
-    setSent(true);
-    setTimeout(onClose, 1200);
-  };
-
+  const handleSend = () => { setSent(true); setTimeout(onClose, 1200); };
   return (
     <Modal title="Send Email to Driver" onClose={onClose}>
       <div className="px-6 py-5 space-y-4">
         <div>
           <label className="block text-xs font-semibold text-slate-500 mb-1">To:</label>
-          <input readOnly value={driver.email}
-            className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm text-slate-700 bg-slate-50 outline-none" />
+          <input readOnly value={driver.email} className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm text-slate-700 bg-slate-50 outline-none" />
         </div>
         <div>
           <label className="block text-xs font-semibold text-slate-500 mb-1">Subject:</label>
-          <input readOnly value={`Platform Charge Payment Reminder - ${driver.name}`}
-            className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm text-slate-700 bg-slate-50 outline-none" />
+          <input readOnly value={`Platform Charge Payment Reminder - ${driver.name}`} className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm text-slate-700 bg-slate-50 outline-none" />
         </div>
         <div>
           <label className="block text-xs font-semibold text-slate-500 mb-1">Message:</label>
-          <textarea rows={5} placeholder="Enter your message"
-            value={message} onChange={(e) => setMessage(e.target.value)}
+          <textarea rows={5} placeholder="Enter your message" value={message} onChange={(e) => setMessage(e.target.value)}
             className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none transition" />
         </div>
         <div className="flex gap-3">
@@ -135,18 +123,27 @@ function EmailModal({ driver, onClose }) {
             className="flex-1 flex items-center justify-center gap-2 bg-blue-900 hover:bg-blue-800 text-white text-sm font-semibold py-2.5 rounded-lg transition-colors">
             {sent
               ? <><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"/></svg> Sent!</>
-              : <><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg> Send Email</>
-            }
+              : <><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg> Send Email</>}
           </button>
-          <button onClick={onClose}
-            className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold py-2.5 rounded-lg transition-colors">
-            Cancel
-          </button>
+          <button onClick={onClose} className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold py-2.5 rounded-lg transition-colors">Cancel</button>
         </div>
       </div>
     </Modal>
   );
 }
+
+// ─── Spinner ──────────────────────────────────────────────────────────────────
+
+function Spinner({ color = "text-white" }) {
+  return (
+    <svg className={`animate-spin w-4 h-4 ${color}`} fill="none" viewBox="0 0 24 24">
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+    </svg>
+  );
+}
+
+// ─── Main ──────────────────────────────────────────────────────────────────────
 
 export default function RateCommissionManagement() {
   const [kmRate, setKmRate] = useState(1.5);
@@ -154,26 +151,56 @@ export default function RateCommissionManagement() {
   const [editingKm, setEditingKm] = useState("");
   const [editingService, setEditingService] = useState("");
   const [isEditing, setIsEditing] = useState(false);
+  const [settingsError, setSettingsError] = useState("");
+
   const [filter, setFilter] = useState("All");
   const [drivers, setDrivers] = useState(initialDrivers);
   const [detailDriver, setDetailDriver] = useState(null);
   const [emailDriver, setEmailDriver] = useState(null);
 
+  const [updateSetting, { isLoading: isSaving }] = useUpdateSettingMutation();
+
   const startEdit = () => {
     setEditingKm(String(kmRate));
     setEditingService(String(serviceCharge));
+    setSettingsError("");
     setIsEditing(true);
   };
 
-  const saveEdit = () => {
-    const newKm = parseFloat(editingKm);
-    const newSvc = parseFloat(editingService);
-    if (!isNaN(newKm) && newKm > 0) setKmRate(newKm);
-    if (!isNaN(newSvc) && newSvc > 0 && newSvc <= 100) setServiceCharge(newSvc);
+  const cancelEdit = () => {
     setIsEditing(false);
+    setSettingsError("");
   };
 
-  const cancelEdit = () => setIsEditing(false);
+  const saveEdit = async () => {
+    const newKm = parseFloat(editingKm);
+    const newSvc = parseFloat(editingService);
+
+    if (isNaN(newKm) || newKm <= 0) { setSettingsError("Per KM rate must be a positive number."); return; }
+    if (isNaN(newSvc) || newSvc <= 0 || newSvc > 100) { setSettingsError("Service charge must be between 1 and 100."); return; }
+
+    setSettingsError("");
+    try {
+      // Fire both PATCH calls in parallel
+      await Promise.all([
+        updateSetting({
+          key: "per_kilo_driver_rate",
+          value: String(newKm),
+          description: "Per kilo rent",
+        }).unwrap(),
+        updateSetting({
+          key: "platform_rate_percent",
+          value: String(newSvc),
+          description: "Platform value",
+        }).unwrap(),
+      ]);
+      setKmRate(newKm);
+      setServiceCharge(newSvc);
+      setIsEditing(false);
+    } catch (err) {
+      setSettingsError(err?.data?.detail || "Failed to save settings. Please try again.");
+    }
+  };
 
   const suspendDriver = (id) => setDrivers((prev) => prev.map((d) => d.id === id ? { ...d, status: "suspended" } : d));
 
@@ -212,17 +239,29 @@ export default function RateCommissionManagement() {
             </button>
           ) : (
             <div className="flex gap-2">
-              <button onClick={saveEdit}
-                className="bg-blue-900 hover:bg-blue-800 text-white text-sm font-semibold px-5 py-2 rounded-lg transition-colors">
-                Save Changes
+              <button
+                onClick={saveEdit}
+                disabled={isSaving}
+                className="flex items-center gap-2 bg-blue-900 hover:bg-blue-800 disabled:opacity-60 text-white text-sm font-semibold px-5 py-2 rounded-lg transition-colors"
+              >
+                {isSaving && <Spinner />}
+                {isSaving ? "Saving…" : "Save Changes"}
               </button>
-              <button onClick={cancelEdit}
-                className="bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
+              <button onClick={cancelEdit} disabled={isSaving}
+                className="bg-slate-100 hover:bg-slate-200 disabled:opacity-60 text-slate-700 text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
                 Cancel
               </button>
             </div>
           )}
         </div>
+
+        {/* Error message */}
+        {settingsError && (
+          <div className="mb-4 bg-rose-50 border border-rose-200 text-rose-700 text-sm px-4 py-3 rounded-lg flex items-center justify-between">
+            <span>{settingsError}</span>
+            <button onClick={() => setSettingsError("")} className="ml-4 text-rose-400 hover:text-rose-600">✕</button>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Per KM Rate */}
@@ -235,17 +274,15 @@ export default function RateCommissionManagement() {
             <div className="flex-1 min-w-0">
               <p className="text-xs font-semibold text-blue-700 mb-1">Per Kilometer Rate</p>
               {isEditing ? (
-                <div className="flex items-center gap-1.5">
-                  <input
-                    type="number"
-                    value={editingKm}
-                    onChange={(e) => setEditingKm(e.target.value)}
-                    className="w-28 border border-blue-300 bg-white rounded-lg px-3 py-1.5 text-xl font-bold text-blue-900 outline-none focus:ring-2 focus:ring-blue-500 transition"
-                    step="0.1"
-                    min="0"
-                    autoFocus
-                  />
-                </div>
+                <input
+                  type="number"
+                  value={editingKm}
+                  onChange={(e) => setEditingKm(e.target.value)}
+                  className="w-28 border border-blue-300 bg-white rounded-lg px-3 py-1.5 text-xl font-bold text-blue-900 outline-none focus:ring-2 focus:ring-blue-500 transition"
+                  step="0.1"
+                  min="0"
+                  autoFocus
+                />
               ) : (
                 <p className="text-2xl font-bold text-blue-900">${kmRate.toFixed(2)}/km</p>
               )}
@@ -263,17 +300,15 @@ export default function RateCommissionManagement() {
             <div className="flex-1 min-w-0">
               <p className="text-xs font-semibold text-purple-700 mb-1">Platform Service Charge</p>
               {isEditing ? (
-                <div className="flex items-center gap-1.5">
-                  <input
-                    type="number"
-                    value={editingService}
-                    onChange={(e) => setEditingService(e.target.value)}
-                    className="w-24 border border-purple-300 bg-white rounded-lg px-3 py-1.5 text-xl font-bold text-purple-700 outline-none focus:ring-2 focus:ring-purple-500 transition"
-                    step="1"
-                    min="0"
-                    max="100"
-                  />
-                </div>
+                <input
+                  type="number"
+                  value={editingService}
+                  onChange={(e) => setEditingService(e.target.value)}
+                  className="w-24 border border-purple-300 bg-white rounded-lg px-3 py-1.5 text-xl font-bold text-purple-700 outline-none focus:ring-2 focus:ring-purple-500 transition"
+                  step="1"
+                  min="0"
+                  max="100"
+                />
               ) : (
                 <p className="text-2xl font-bold text-purple-700">{serviceCharge}%</p>
               )}
