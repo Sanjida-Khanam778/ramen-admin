@@ -2,6 +2,8 @@ import { api } from "./api";
 
 export const couponApi = api.injectEndpoints({
   endpoints: (builder) => ({
+    // ─── Coupons ───────────────────────────────────────────────────────────────
+
     // GET /admin/coupons/?status=active|disabled|expired
     getCoupons: builder.query({
       query: (status) => ({
@@ -67,7 +69,9 @@ export const couponApi = api.injectEndpoints({
       invalidatesTags: ["coupons"],
     }),
 
-    // GET /admin/settings/ — fetch all platform settings
+    // ─── Settings ──────────────────────────────────────────────────────────────
+
+    // GET /admin/settings/
     getSettings: builder.query({
       query: () => ({
         url: `admin/settings/`,
@@ -76,8 +80,7 @@ export const couponApi = api.injectEndpoints({
       providesTags: ["settings"],
     }),
 
-    // POST /admin/settings/ — upsert a single setting by key
-    // body: { key, value, description }
+    // POST /admin/settings/ — body: { key, value, description }
     updateSetting: builder.mutation({
       query: (data) => ({
         url: `admin/settings/`,
@@ -86,16 +89,82 @@ export const couponApi = api.injectEndpoints({
       }),
       invalidatesTags: ["settings"],
     }),
+
+    // ─── Withdrawals ───────────────────────────────────────────────────────────
+
+    // GET /admin/withdrawals/
+    // params: { status, payout_method, search, ordering }
+    // defaults to status=pending if no params passed
+    getWithdrawals: builder.query({
+      query: (params = {}) => {
+        const searchParams = new URLSearchParams();
+        if (params.status)        searchParams.set("status",        params.status);
+        if (params.payout_method) searchParams.set("payout_method", params.payout_method);
+        if (params.search)        searchParams.set("search",        params.search);
+        if (params.ordering)      searchParams.set("ordering",      params.ordering);
+        const qs = searchParams.toString();
+        return {
+          url: qs ? `admin/withdrawals/?${qs}` : `admin/withdrawals/`,
+          method: "GET",
+        };
+      },
+      providesTags: ["withdrawals"],
+    }),
+
+    // GET /admin/withdrawals/:requestId/
+    getWithdrawalById: builder.query({
+      query: (requestId) => ({
+        url: `admin/withdrawals/${requestId}/`,
+        method: "GET",
+      }),
+      providesTags: (result, error, requestId) => [
+        { type: "withdrawal-detail", id: requestId },
+      ],
+    }),
+
+    // PATCH /admin/withdrawals/:requestId/ → approve (status: "paid")
+    approveWithdrawal: builder.mutation({
+      query: (requestId) => ({
+        url: `admin/withdrawals/${requestId}/`,
+        method: "PATCH",
+        body: { status: "paid" },
+      }),
+      invalidatesTags: (result, error, requestId) => [
+        "withdrawals",
+        { type: "withdrawal-detail", id: requestId },
+      ],
+    }),
+
+    // PATCH /admin/withdrawals/:requestId/ → cancel (status: "cancelled")
+    // args: { requestId, rejection_reason }
+    cancelWithdrawal: builder.mutation({
+      query: ({ requestId, rejection_reason }) => ({
+        url: `admin/withdrawals/${requestId}/`,
+        method: "PATCH",
+        body: { status: "cancelled", rejection_reason },
+      }),
+      invalidatesTags: (result, error, { requestId }) => [
+        "withdrawals",
+        { type: "withdrawal-detail", id: requestId },
+      ],
+    }),
   }),
 });
 
 export const {
+  // Coupons
   useGetCouponsQuery,
   useGetCouponByIdQuery,
   useCreateCouponMutation,
   useUpdateCouponMutation,
   useDisableCouponMutation,
   useDeleteCouponMutation,
+  // Settings
   useGetSettingsQuery,
   useUpdateSettingMutation,
+  // Withdrawals
+  useGetWithdrawalsQuery,
+  useGetWithdrawalByIdQuery,
+  useApproveWithdrawalMutation,
+  useCancelWithdrawalMutation,
 } = couponApi;
