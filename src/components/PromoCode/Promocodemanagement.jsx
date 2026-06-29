@@ -1,64 +1,76 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-const initialCodes = [
-  {
-    id: "PROMO001",
-    code: "SAVE10",
-    description: "Get 10% off your next ride",
-    discountType: "percentage",
-    discountValue: 10,
-    maxDiscount: null,
-    minOrder: null,
-    usageLimit: 100,
-    used: 23,
-    validFrom: "2026-03-01",
-    validUntil: "2026-03-31",
-    status: "active",
-    createdDate: "2026-03-01",
-  },
-  {
-    id: "PROMO002",
-    code: "FREE5",
-    description: "Get $5 off your next ride",
-    discountType: "fixed",
-    discountValue: 5,
-    maxDiscount: null,
-    minOrder: null,
-    usageLimit: 50,
-    used: 17,
-    validFrom: "2026-03-01",
-    validUntil: "2026-03-31",
-    status: "active",
-    createdDate: "2026-03-01",
-  },
-  {
-    id: "PROMO003",
-    code: "DISCOUNT20",
-    description: "Get 20% off your next ride",
-    discountType: "percentage",
-    discountValue: 20,
-    maxDiscount: null,
-    minOrder: null,
-    usageLimit: 75,
-    used: 45,
-    validFrom: "2026-03-01",
-    validUntil: "2026-03-31",
-    status: "active",
-    createdDate: "2026-03-01",
-  },
-];
+import {
+  useGetCouponsQuery,
+  useGetCouponByIdQuery,
+  useCreateCouponMutation,
+  useUpdateCouponMutation,
+  useDisableCouponMutation,
+  useDeleteCouponMutation,
+} from "../../Api/couponApi";
+import toast from "react-hot-toast";
+
+// ─── helpers ──────────────────────────────────────────────────────────────────
+
+function mapCoupon(c) {
+  const now = new Date();
+  const until = new Date(c.valid_until);
+  let status = "active";
+  if (!c.is_active) status = "disabled";
+  else if (until < now) status = "expired";
+
+  return {
+    id: c.id,
+    code: c.code,
+    description: c.description || c.title || "—",
+    discountType: c.discount_type,
+    discountValue: parseFloat(c.discount_value) || 0,
+    maxDiscount: c.max_discount ? parseFloat(c.max_discount) : null,
+    minOrder: c.min_order_value ? parseFloat(c.min_order_value) : null,
+    usageLimit: c.max_uses ?? "∞",
+    usageLimitRaw: c.max_uses,
+    used: c.current_uses ?? 0,
+    maxUsesPerUser: c.max_uses_per_user ?? 1,
+    validFrom: c.valid_from?.slice(0, 10),
+    validUntil: c.valid_until?.slice(0, 10),
+    status,
+    isActive: c.is_active,
+    title: c.title || "",
+  };
+}
+
+function toApiBody(form) {
+  return {
+    code: form.code.toUpperCase(),
+    discount_type: form.discountType,
+    discount_value: String(form.discountValue),
+    max_discount: form.maxDiscount ? String(form.maxDiscount) : null,
+    min_order_value: form.minOrder ? String(form.minOrder) : null,
+    valid_from: form.validFrom ? `${form.validFrom}T00:00:00Z` : null,
+    valid_until: form.validUntil ? `${form.validUntil}T23:59:59Z` : null,
+    max_uses: form.usageLimit ? Number(form.usageLimit) : null,
+    max_uses_per_user: form.maxUsesPerUser ? Number(form.maxUsesPerUser) : 1,
+    is_active: true,
+    title: form.title || "",
+    description: form.description || "",
+  };
+}
 
 const emptyForm = {
   code: "",
+  title: "",
   description: "",
   discountType: "percentage",
   discountValue: "",
   maxDiscount: "",
   minOrder: "",
   usageLimit: "",
+  maxUsesPerUser: "1",
   validFrom: "",
   validUntil: "",
 };
+
+// ─── small UI pieces ───────────────────────────────────────────────────────────
 
 function StatusBadge({ status }) {
   const styles = {
@@ -74,6 +86,9 @@ function StatusBadge({ status }) {
 }
 
 function UsageBar({ used, limit }) {
+  if (!limit || limit === "∞") {
+    return <span className="text-sm font-medium text-slate-700">{used} / ∞</span>;
+  }
   const pct = Math.min(100, Math.round((used / limit) * 100));
   const color = pct >= 80 ? "bg-rose-500" : pct >= 50 ? "bg-amber-400" : "bg-blue-600";
   return (
@@ -89,9 +104,7 @@ function UsageBar({ used, limit }) {
 function StatCard({ label, value, icon, iconBg }) {
   return (
     <div className="bg-white rounded-xl border border-slate-200 px-5 py-4 flex items-center gap-4 shadow-sm">
-      <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${iconBg}`}>
-        {icon}
-      </div>
+      <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${iconBg}`}>{icon}</div>
       <div>
         <p className="text-xs text-slate-500 font-medium mb-0.5">{label}</p>
         <p className="text-2xl font-bold text-slate-800 leading-none">{value}</p>
@@ -103,8 +116,17 @@ function StatCard({ label, value, icon, iconBg }) {
 function CopyIcon() {
   return (
     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function Spinner() {
+  return (
+    <svg className="animate-spin w-5 h-5" fill="none" viewBox="0 0 24 24">
+      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
     </svg>
   );
 }
@@ -112,11 +134,8 @@ function CopyIcon() {
 function Modal({ children, onClose }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md relative animate-fade-in">
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 transition-colors"
-        >
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md relative animate-fade-in max-h-[90vh] overflow-y-auto">
+        <button onClick={onClose} className="absolute top-4 right-4 text-slate-400 hover:text-slate-700 transition-colors z-10">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
@@ -127,8 +146,44 @@ function Modal({ children, onClose }) {
   );
 }
 
-function CreateModal({ onClose, onCreate }) {
-  const [form, setForm] = useState(emptyForm);
+// ─── Field & inputCls defined at module level so they never re-create on render ──
+
+function Field({ label, id, required, error, children }) {
+  return (
+    <div>
+      <label className="block text-xs font-semibold text-slate-600 mb-1">
+        {label} {required && <span className="text-rose-500">*</span>}
+      </label>
+      {children}
+      {error && <p className="text-xs text-rose-500 mt-1">{error}</p>}
+    </div>
+  );
+}
+
+function inputCls(hasError) {
+  return `w-full border rounded-lg px-3 py-2 text-sm text-slate-800 placeholder-slate-400 outline-none transition focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${hasError ? "border-rose-400" : "border-slate-200"}`;
+}
+
+// ─── Create / Edit Modal ───────────────────────────────────────────────────────
+
+function CouponFormModal({ onClose, onSubmit, initialData, isLoading, mode = "create" }) {
+  const [form, setForm] = useState(
+    initialData
+      ? {
+          code: initialData.code,
+          title: initialData.title || "",
+          description: initialData.description === "—" ? "" : initialData.description,
+          discountType: initialData.discountType,
+          discountValue: initialData.discountValue,
+          maxDiscount: initialData.maxDiscount ?? "",
+          minOrder: initialData.minOrder ?? "",
+          usageLimit: initialData.usageLimitRaw ?? "",
+          maxUsesPerUser: initialData.maxUsesPerUser ?? 1,
+          validFrom: initialData.validFrom ?? "",
+          validUntil: initialData.validUntil ?? "",
+        }
+      : emptyForm,
+  );
   const [errors, setErrors] = useState({});
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
@@ -136,9 +191,7 @@ function CreateModal({ onClose, onCreate }) {
   const validate = () => {
     const e = {};
     if (!form.code.trim()) e.code = "Required";
-    if (!form.description.trim()) e.description = "Required";
     if (!form.discountValue) e.discountValue = "Required";
-    if (!form.usageLimit) e.usageLimit = "Required";
     if (!form.validFrom) e.validFrom = "Required";
     if (!form.validUntil) e.validUntil = "Required";
     return e;
@@ -147,89 +200,92 @@ function CreateModal({ onClose, onCreate }) {
   const handleSubmit = () => {
     const e = validate();
     if (Object.keys(e).length) { setErrors(e); return; }
-    onCreate({
-      id: `PROMO${String(Date.now()).slice(-4)}`,
-      code: form.code.toUpperCase(),
-      description: form.description,
-      discountType: form.discountType,
-      discountValue: Number(form.discountValue),
-      maxDiscount: form.maxDiscount ? Number(form.maxDiscount) : null,
-      minOrder: form.minOrder ? Number(form.minOrder) : null,
-      usageLimit: Number(form.usageLimit),
-      used: 0,
-      validFrom: form.validFrom,
-      validUntil: form.validUntil,
-      status: "active",
-      createdDate: new Date().toISOString().slice(0, 10),
-    });
+    onSubmit(toApiBody(form));
   };
-
-  const Field = ({ label, id, required, children }) => (
-    <div>
-      <label className="block text-xs font-semibold text-slate-600 mb-1">
-        {label} {required && <span className="text-rose-500">*</span>}
-      </label>
-      {children}
-      {errors[id] && <p className="text-xs text-rose-500 mt-1">{errors[id]}</p>}
-    </div>
-  );
-
-  const inputCls = (id) =>
-    `w-full border rounded-lg px-3 py-2 text-sm text-slate-800 placeholder-slate-400 outline-none transition focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors[id] ? "border-rose-400" : "border-slate-200"}`;
 
   return (
     <Modal onClose={onClose}>
       <div className="p-6">
-        <h2 className="text-lg font-bold text-slate-800 mb-5">Create New Promo Code</h2>
+        <h2 className="text-lg font-bold text-slate-800 mb-5">
+          {mode === "edit" ? "Edit Coupon" : "Create New Promo Code"}
+        </h2>
         <div className="space-y-4">
-          <Field label="Promo Code" id="code" required>
-            <input className={inputCls("code")} placeholder="e.g., SAVE20" value={form.code}
-              onChange={(e) => set("code", e.target.value)} />
+          <Field label="Promo Code" id="code" required error={errors.code}>
+            <input
+              className={inputCls(!!errors.code)}
+              placeholder="e.g., SAVE20"
+              value={form.code}
+              disabled={mode === "edit"}
+              onChange={(e) => set("code", e.target.value)}
+            />
           </Field>
-          <Field label="Description" id="description" required>
-            <input className={inputCls("description")} placeholder="e.g., Get 20% off your next ride" value={form.description}
+
+          <Field label="Title" id="title" error={errors.title}>
+            <input className={inputCls(false)} placeholder="e.g., Summer Sale" value={form.title}
+              onChange={(e) => set("title", e.target.value)} />
+          </Field>
+
+          <Field label="Description" id="description" error={errors.description}>
+            <input className={inputCls(false)} placeholder="e.g., Get 20% off your next ride" value={form.description}
               onChange={(e) => set("description", e.target.value)} />
           </Field>
+
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Discount Type" id="discountType" required>
-              <select className={inputCls("discountType")} value={form.discountType}
+            <Field label="Discount Type" id="discountType" required error={errors.discountType}>
+              <select className={inputCls(false)} value={form.discountType}
                 onChange={(e) => set("discountType", e.target.value)}>
                 <option value="percentage">Percentage (%)</option>
                 <option value="fixed">Fixed ($)</option>
               </select>
             </Field>
-            <Field label="Discount Value" id="discountValue" required>
-              <input className={inputCls("discountValue")} type="number" placeholder="10" value={form.discountValue}
+            <Field label="Discount Value" id="discountValue" required error={errors.discountValue}>
+              <input className={inputCls(!!errors.discountValue)} type="number" placeholder="10" value={form.discountValue}
                 onChange={(e) => set("discountValue", e.target.value)} />
             </Field>
           </div>
-          <Field label="Max Discount Amount ($)" id="maxDiscount">
-            <input className={inputCls("maxDiscount")} type="number" placeholder="10.00" value={form.maxDiscount}
-              onChange={(e) => set("maxDiscount", e.target.value)} />
-          </Field>
-          <Field label="Minimum Order Amount ($)" id="minOrder">
-            <input className={inputCls("minOrder")} type="number" placeholder="20.00" value={form.minOrder}
-              onChange={(e) => set("minOrder", e.target.value)} />
-          </Field>
-          <Field label="Usage Limit" id="usageLimit" required>
-            <input className={inputCls("usageLimit")} type="number" placeholder="100" value={form.usageLimit}
-              onChange={(e) => set("usageLimit", e.target.value)} />
-          </Field>
+
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Valid From" id="validFrom" required>
-              <input className={inputCls("validFrom")} type="date" value={form.validFrom}
+            <Field label="Max Discount ($)" id="maxDiscount" error={errors.maxDiscount}>
+              <input className={inputCls(false)} type="number" placeholder="15.00" value={form.maxDiscount}
+                onChange={(e) => set("maxDiscount", e.target.value)} />
+            </Field>
+            <Field label="Min Order ($)" id="minOrder" error={errors.minOrder}>
+              <input className={inputCls(false)} type="number" placeholder="50.00" value={form.minOrder}
+                onChange={(e) => set("minOrder", e.target.value)} />
+            </Field>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Usage Limit" id="usageLimit" error={errors.usageLimit}>
+              <input className={inputCls(false)} type="number" placeholder="Unlimited" value={form.usageLimit}
+                onChange={(e) => set("usageLimit", e.target.value)} />
+            </Field>
+            <Field label="Max Uses / User" id="maxUsesPerUser" error={errors.maxUsesPerUser}>
+              <input className={inputCls(false)} type="number" placeholder="1" value={form.maxUsesPerUser}
+                onChange={(e) => set("maxUsesPerUser", e.target.value)} />
+            </Field>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Valid From" id="validFrom" required error={errors.validFrom}>
+              <input className={inputCls(!!errors.validFrom)} type="date" value={form.validFrom}
                 onChange={(e) => set("validFrom", e.target.value)} />
             </Field>
-            <Field label="Valid Until" id="validUntil" required>
-              <input className={inputCls("validUntil")} type="date" value={form.validUntil}
+            <Field label="Valid Until" id="validUntil" required error={errors.validUntil}>
+              <input className={inputCls(!!errors.validUntil)} type="date" value={form.validUntil}
                 onChange={(e) => set("validUntil", e.target.value)} />
             </Field>
           </div>
         </div>
+
         <div className="flex gap-3 mt-6">
-          <button onClick={handleSubmit}
-            className="flex-1 bg-blue-900 hover:bg-blue-800 text-white text-sm font-semibold py-2.5 rounded-lg transition-colors">
-            Create Promo Code
+          <button
+            onClick={handleSubmit}
+            disabled={isLoading}
+            className="flex-1 bg-blue-900 hover:bg-blue-800 disabled:opacity-60 text-white text-sm font-semibold py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2"
+          >
+            {isLoading && <Spinner />}
+            {mode === "edit" ? "Save Changes" : "Create Promo Code"}
           </button>
           <button onClick={onClose}
             className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold py-2.5 rounded-lg transition-colors">
@@ -241,147 +297,253 @@ function CreateModal({ onClose, onCreate }) {
   );
 }
 
-function DetailModal({ promo, onClose, onExpire, onDisable }) {
+// ─── Detail Modal ──────────────────────────────────────────────────────────────
+
+function DetailModal({ couponId, onClose, onDisable, onEdit, isDisabling }) {
   const [copied, setCopied] = useState(false);
+
+  // Fetch fresh detail data from API
+  const { data: rawDetail, isLoading: isDetailLoading } = useGetCouponByIdQuery(couponId);
+  const promo = rawDetail ? mapCoupon(rawDetail) : null;
+
   const copy = () => {
+    if (!promo) return;
     navigator.clipboard.writeText(promo.code).catch(() => {});
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
   };
-  const pct = Math.round((promo.used / promo.usageLimit) * 100);
+
+  const pct = promo?.usageLimitRaw
+    ? Math.round((promo.used / promo.usageLimitRaw) * 100)
+    : 0;
 
   return (
     <Modal onClose={onClose}>
       <div className="p-6">
         <h2 className="text-lg font-bold text-slate-800 mb-5">Promo Code Details</h2>
-        <div className="bg-blue-50 rounded-xl p-4 flex items-center justify-between mb-5">
-          <div className="flex items-center gap-3">
-            <div className="bg-blue-900 w-9 h-9 rounded-lg flex items-center justify-center">
-              <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-                  d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a2 2 0 012-2z" />
-              </svg>
-            </div>
-            <div>
-              <p className="text-xs text-slate-500">Promo Code</p>
-              <p className="text-xl font-bold text-blue-900">{promo.code}</p>
-            </div>
-          </div>
-          <button onClick={copy}
-            className="flex items-center gap-1.5 bg-blue-900 hover:bg-blue-800 text-white text-xs font-semibold px-3 py-2 rounded-lg transition-colors">
-            <CopyIcon />
-            {copied ? "Copied!" : "Copy Code"}
-          </button>
-        </div>
 
-        <div className="grid grid-cols-2 gap-x-6 gap-y-4 text-sm mb-5">
-          <div>
-            <p className="text-xs text-slate-400 font-medium mb-0.5">Description</p>
-            <p className="text-slate-700">{promo.description}</p>
+        {isDetailLoading || !promo ? (
+          <div className="flex items-center justify-center py-12 gap-3 text-slate-400">
+            <Spinner /> <span className="text-sm">Loading details…</span>
           </div>
-          <div>
-            <p className="text-xs text-slate-400 font-medium mb-0.5">Status</p>
-            <StatusBadge status={promo.status} />
-          </div>
-          <div>
-            <p className="text-xs text-slate-400 font-medium mb-0.5">Discount</p>
-            <p className="text-slate-700">
-              {promo.discountType === "percentage" ? `${promo.discountValue}% off` : `$${promo.discountValue} off`}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-slate-400 font-medium mb-0.5">Minimum Amount</p>
-            <p className="text-slate-700">{promo.minOrder ? `$${promo.minOrder}` : "No minimum"}</p>
-          </div>
-          <div>
-            <p className="text-xs text-slate-400 font-medium mb-0.5">Usage</p>
-            <p className="text-slate-700 mb-1">{promo.used} / {promo.usageLimit} used</p>
-            <div className="h-1.5 w-40 rounded-full bg-slate-100">
-              <div className="h-full rounded-full bg-blue-600" style={{ width: `${pct}%` }} />
+        ) : (
+          <>
+            <div className="bg-blue-50 rounded-xl p-4 flex items-center justify-between mb-5">
+              <div className="flex items-center gap-3">
+                <div className="bg-blue-900 w-9 h-9 rounded-lg flex items-center justify-center">
+                  <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                      d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a2 2 0 012-2z" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500">Promo Code</p>
+                  <p className="text-xl font-bold text-blue-900">{promo.code}</p>
+                </div>
+              </div>
+              <button onClick={copy}
+                className="flex items-center gap-1.5 bg-blue-900 hover:bg-blue-800 text-white text-xs font-semibold px-3 py-2 rounded-lg transition-colors">
+                <CopyIcon />
+                {copied ? "Copied!" : "Copy Code"}
+              </button>
             </div>
-          </div>
-          <div>
-            <p className="text-xs text-slate-400 font-medium mb-0.5">Usage Rate</p>
-            <p className="text-slate-700">{pct}%</p>
-          </div>
-          <div>
-            <p className="text-xs text-slate-400 font-medium mb-0.5">Valid From</p>
-            <p className="text-slate-700">{promo.validFrom}</p>
-          </div>
-          <div>
-            <p className="text-xs text-slate-400 font-medium mb-0.5">Valid Until</p>
-            <p className="text-slate-700">{promo.validUntil}</p>
-          </div>
-          <div>
-            <p className="text-xs text-slate-400 font-medium mb-0.5">Created Date</p>
-            <p className="text-slate-700">{promo.createdDate}</p>
-          </div>
-          <div>
-            <p className="text-xs text-slate-400 font-medium mb-0.5">Promo ID</p>
-            <p className="text-slate-700 font-mono text-xs">{promo.id}</p>
-          </div>
-        </div>
 
-        <div className="flex gap-3">
-          <button onClick={() => { onExpire(promo.id); onClose(); }}
-            className="flex-1 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold py-2.5 rounded-lg transition-colors">
-            Expired Code
-          </button>
-          <button onClick={() => { onDisable(promo.id); onClose(); }}
-            className="flex-1 bg-rose-600 hover:bg-rose-700 text-white text-sm font-semibold py-2.5 rounded-lg transition-colors">
-            Disabled Code
-          </button>
-        </div>
+            <div className="grid grid-cols-2 gap-x-6 gap-y-4 text-sm mb-5">
+              {promo.title && (
+                <div>
+                  <p className="text-xs text-slate-400 font-medium mb-0.5">Title</p>
+                  <p className="text-slate-700">{promo.title}</p>
+                </div>
+              )}
+              <div>
+                <p className="text-xs text-slate-400 font-medium mb-0.5">Description</p>
+                <p className="text-slate-700">{promo.description}</p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-400 font-medium mb-0.5">Status</p>
+                <StatusBadge status={promo.status} />
+              </div>
+              <div>
+                <p className="text-xs text-slate-400 font-medium mb-0.5">Discount</p>
+                <p className="text-slate-700">
+                  {promo.discountType === "percentage" ? `${promo.discountValue}% off` : `$${promo.discountValue} off`}
+                </p>
+              </div>
+              {promo.maxDiscount && (
+                <div>
+                  <p className="text-xs text-slate-400 font-medium mb-0.5">Max Discount</p>
+                  <p className="text-slate-700">${promo.maxDiscount}</p>
+                </div>
+              )}
+              <div>
+                <p className="text-xs text-slate-400 font-medium mb-0.5">Min Order</p>
+                <p className="text-slate-700">{promo.minOrder ? `$${promo.minOrder}` : "No minimum"}</p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-400 font-medium mb-0.5">Max Uses / User</p>
+                <p className="text-slate-700">{promo.maxUsesPerUser}</p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-400 font-medium mb-0.5">Usage</p>
+                <p className="text-slate-700 mb-1">{promo.used} / {promo.usageLimit} used</p>
+                {promo.usageLimitRaw && (
+                  <div className="h-1.5 w-40 rounded-full bg-slate-100">
+                    <div className="h-full rounded-full bg-blue-600" style={{ width: `${pct}%` }} />
+                  </div>
+                )}
+              </div>
+              {promo.usageLimitRaw && (
+                <div>
+                  <p className="text-xs text-slate-400 font-medium mb-0.5">Usage Rate</p>
+                  <p className="text-slate-700">{pct}%</p>
+                </div>
+              )}
+              <div>
+                <p className="text-xs text-slate-400 font-medium mb-0.5">Valid From</p>
+                <p className="text-slate-700">{promo.validFrom}</p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-400 font-medium mb-0.5">Valid Until</p>
+                <p className="text-slate-700">{promo.validUntil}</p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-400 font-medium mb-0.5">Coupon ID</p>
+                <p className="text-slate-700 font-mono text-xs truncate">{promo.id}</p>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => { onEdit(promo); onClose(); }}
+                className="flex-1 bg-blue-900 hover:bg-blue-800 text-white text-sm font-semibold py-2.5 rounded-lg transition-colors"
+              >
+                Edit
+              </button>
+              {promo.status !== "disabled" && (
+                <button
+                  onClick={() => onDisable(promo.id)}
+                  disabled={isDisabling}
+                  className="flex-1 bg-rose-600 hover:bg-rose-700 disabled:opacity-60 text-white text-sm font-semibold py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2"
+                >
+                  {isDisabling && <Spinner />}
+                  Disable
+                </button>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </Modal>
   );
 }
 
+// ─── Main Component ────────────────────────────────────────────────────────────
+
 export default function PromoCodeManagement() {
-  const [codes, setCodes] = useState(initialCodes);
-  const [filter, setFilter] = useState("All");
+  const [statusFilter, setStatusFilter] = useState("");
   const [showCreate, setShowCreate] = useState(false);
-  const [detailPromo, setDetailPromo] = useState(null);
+  const [editPromo, setEditPromo] = useState(null);
+  const [detailCouponId, setDetailCouponId] = useState(null);
   const [copiedId, setCopiedId] = useState(null);
 
-  const filters = ["All", "Active", "Expired", "Disabled"];
+  // ── RTK hooks ──
+  const { data, isLoading, isError } = useGetCouponsQuery(statusFilter);
+  const [createCoupon, { isLoading: isCreating }] = useCreateCouponMutation();
+  const [updateCoupon, { isLoading: isUpdating }] = useUpdateCouponMutation();
+  const [disableCoupon, { isLoading: isDisabling }] = useDisableCouponMutation();
+  const [deleteCoupon] = useDeleteCouponMutation();
 
-  const filtered = codes.filter((c) => {
-    if (filter === "All") return true;
-    return c.status === filter.toLowerCase();
-  });
+  const rawCoupons = data?.data ?? [];
+  const coupons = rawCoupons.map(mapCoupon);
+
+  const filters = [
+    { label: "All", value: "" },
+    { label: "Active", value: "active" },
+    { label: "Expired", value: "expired" },
+    { label: "Disabled", value: "disabled" },
+  ];
 
   const stats = {
-    total: codes.length,
-    active: codes.filter((c) => c.status === "active").length,
-    totalUsage: codes.reduce((a, c) => a + c.used, 0),
-    avgRate: codes.length
-      ? Math.round(codes.reduce((a, c) => a + (c.used / c.usageLimit) * 100, 0) / codes.length)
-      : 0,
+    total: coupons.length,
+    active: coupons.filter((c) => c.status === "active").length,
+    totalUsage: coupons.reduce((a, c) => a + c.used, 0),
+    avgRate:
+      coupons.length && coupons.some((c) => c.usageLimitRaw)
+        ? Math.round(
+            coupons
+              .filter((c) => c.usageLimitRaw)
+              .reduce((a, c) => a + (c.used / c.usageLimitRaw) * 100, 0) /
+              coupons.filter((c) => c.usageLimitRaw).length,
+          )
+        : 0,
   };
 
-  const handleCreate = (newCode) => {
-    setCodes((prev) => [...prev, newCode]);
-    setShowCreate(false);
+  // ── handlers ──
+
+  const handleCreate = async (body) => {
+    try {
+      await createCoupon(body).unwrap();
+      setShowCreate(false);
+      toast.success("Promo code created successfully!");
+    } catch (err) {
+      toast.error(err?.data?.detail || err?.data?.code?.[0] || "Failed to create coupon.");
+    }
   };
 
-  const handleExpire = (id) => setCodes((prev) => prev.map((c) => c.id === id ? { ...c, status: "expired" } : c));
-  const handleDisable = (id) => setCodes((prev) => prev.map((c) => c.id === id ? { ...c, status: "disabled" } : c));
-  const handleDelete = (id) => setCodes((prev) => prev.filter((c) => c.id !== id));
+  const handleUpdate = async (body) => {
+    try {
+      await updateCoupon({ couponId: editPromo.id, ...body }).unwrap();
+      setEditPromo(null);
+      toast.success("Coupon updated successfully!");
+    } catch (err) {
+      toast.error(err?.data?.detail || "Failed to update coupon.");
+    }
+  };
+
+  const handleDisable = async (couponId) => {
+    try {
+      await disableCoupon(couponId).unwrap();
+      setDetailCouponId(null);
+      toast.success("Coupon disabled successfully.");
+    } catch (err) {
+      toast.error(err?.data?.detail || "Failed to disable coupon.");
+    }
+  };
+
+  const handleDelete = async (couponId, e) => {
+    e.stopPropagation();
+    try {
+      await deleteCoupon(couponId).unwrap();
+      toast.success("Coupon deleted.");
+    } catch (err) {
+      toast.error(err?.data?.detail || "Failed to delete coupon.");
+    }
+  };
+
+  const handleDisableRow = async (couponId, e) => {
+    e.stopPropagation();
+    try {
+      await disableCoupon(couponId).unwrap();
+      toast.success("Coupon disabled.");
+    } catch (err) {
+      toast.error(err?.data?.detail || "Failed to disable coupon.");
+    }
+  };
 
   const copyCode = (code, id, e) => {
     e.stopPropagation();
     navigator.clipboard.writeText(code).catch(() => {});
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 1500);
+    toast.info(`Code "${code}" copied!`);
   };
+
+  // ── render ──
 
   return (
     <div className="min-h-screen bg-slate-50 p-8 font-sans">
-      <style>{`
-        @keyframes fade-in { from { opacity:0; transform:scale(0.97) translateY(8px); } to { opacity:1; transform:scale(1) translateY(0); } }
-        .animate-fade-in { animation: fade-in 0.2s ease-out; }
-      `}</style>
+   
+
 
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
@@ -389,8 +551,10 @@ export default function PromoCodeManagement() {
           <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Promo Code Management</h1>
           <p className="text-sm text-slate-500 mt-0.5">Create and manage promotional codes for your ride-share app</p>
         </div>
-        <button onClick={() => setShowCreate(true)}
-          className="flex items-center gap-2 bg-blue-900 hover:bg-blue-800 text-white text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-colors">
+        <button
+          onClick={() => setShowCreate(true)}
+          className="flex items-center gap-2 bg-blue-900 hover:bg-blue-800 text-white text-sm font-semibold px-4 py-2.5 rounded-lg shadow-sm transition-colors"
+        >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 5v14M5 12h14" />
           </svg>
@@ -415,108 +579,131 @@ export default function PromoCodeManagement() {
         {/* Filter Tabs */}
         <div className="flex gap-1.5 p-4 border-b border-slate-100">
           {filters.map((f) => (
-            <button key={f} onClick={() => setFilter(f)}
+            <button key={f.value} onClick={() => setStatusFilter(f.value)}
               className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-colors ${
-                filter === f
-                  ? "bg-blue-900 text-white"
-                  : "text-slate-600 hover:bg-slate-100"
+                statusFilter === f.value ? "bg-blue-900 text-white" : "text-slate-600 hover:bg-slate-100"
               }`}>
-              {f}
+              {f.label}
             </button>
           ))}
         </div>
 
         {/* Table */}
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-slate-100">
-                {["Code", "Description", "Discount", "Usage", "Valid Period", "Status", "Actions"].map((h) => (
-                  <th key={h} className="text-left text-xs font-semibold text-slate-400 uppercase tracking-wider px-5 py-3">
-                    {h}
-                  </th>
+          {isLoading ? (
+            <div className="flex items-center justify-center py-16 gap-3 text-slate-400">
+              <Spinner /> <span className="text-sm">Loading coupons…</span>
+            </div>
+          ) : isError ? (
+            <p className="text-center py-16 text-rose-500 text-sm">Failed to load coupons.</p>
+          ) : (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-100">
+                  {["Code", "Description", "Discount", "Usage", "Valid Period", "Status", "Actions"].map((h) => (
+                    <th key={h} className="text-left text-xs font-semibold text-slate-400 uppercase tracking-wider px-5 py-3">{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-50">
+                {coupons.length === 0 && (
+                  <tr><td colSpan="7" className="text-center py-10 text-slate-400 text-sm">No promo codes found.</td></tr>
+                )}
+                {coupons.map((promo) => (
+                  <tr key={promo.id} className="hover:bg-slate-50/70 transition-colors cursor-pointer"
+                    onClick={() => setDetailCouponId(promo.id)}>
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-bold text-blue-700">{promo.code}</span>
+                        <button onClick={(e) => copyCode(promo.code, promo.id, e)}
+                          className="text-slate-400 hover:text-blue-600 transition-colors p-0.5 rounded">
+                          {copiedId === promo.id
+                            ? <svg className="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" /></svg>
+                            : <CopyIcon />}
+                        </button>
+                      </div>
+                    </td>
+                    <td className="px-5 py-4 text-slate-600 max-w-[200px] truncate">{promo.description}</td>
+                    <td className="px-5 py-4 text-slate-700 font-medium">
+                      {promo.discountType === "percentage" ? `${promo.discountValue}%` : `$${promo.discountValue}`}
+                      {promo.maxDiscount && <span className="text-xs text-slate-400 ml-1">(max ${promo.maxDiscount})</span>}
+                    </td>
+                    <td className="px-5 py-4"><UsageBar used={promo.used} limit={promo.usageLimit} /></td>
+                    <td className="px-5 py-4 text-slate-500">
+                      <div className="flex items-center gap-1.5">
+                        <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                        <span className="text-xs">{promo.validFrom} → {promo.validUntil}</span>
+                      </div>
+                    </td>
+                    <td className="px-5 py-4"><StatusBadge status={promo.status} /></td>
+                    <td className="px-5 py-4" onClick={(e) => e.stopPropagation()}>
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => setEditPromo(promo)}
+                          className="text-slate-400 hover:text-blue-600 transition-colors p-1 rounded" title="Edit">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                        </button>
+                        {promo.status !== "disabled" && (
+                          <button onClick={(e) => handleDisableRow(promo.id, e)}
+                            className="text-slate-400 hover:text-amber-500 transition-colors p-1 rounded" title="Disable">
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                            </svg>
+                          </button>
+                        )}
+                        <button onClick={(e) => handleDelete(promo.id, e)}
+                          className="text-slate-400 hover:text-rose-500 transition-colors p-1 rounded" title="Delete">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
                 ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-50">
-              {filtered.length === 0 && (
-                <tr>
-                  <td colSpan="7" className="text-center py-10 text-slate-400 text-sm">No promo codes found.</td>
-                </tr>
-              )}
-              {filtered.map((promo) => (
-                <tr key={promo.id} className="hover:bg-slate-50/70 transition-colors cursor-pointer"
-                  onClick={() => setDetailPromo(promo)}>
-                  <td className="px-5 py-4">
-                    <div className="flex items-center gap-1.5">
-                      <span className="font-bold text-blue-700">{promo.code}</span>
-                      <button onClick={(e) => copyCode(promo.code, promo.id, e)}
-                        className="text-slate-400 hover:text-blue-600 transition-colors p-0.5 rounded">
-                        {copiedId === promo.id
-                          ? <svg className="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" /></svg>
-                          : <CopyIcon />
-                        }
-                      </button>
-                    </div>
-                  </td>
-                  <td className="px-5 py-4 text-slate-600 max-w-[200px] truncate">{promo.description}</td>
-                  <td className="px-5 py-4 text-slate-700 font-medium">
-                    {promo.discountType === "percentage" ? `${promo.discountValue}%` : `$${promo.discountValue}`}
-                  </td>
-                  <td className="px-5 py-4">
-                    <UsageBar used={promo.used} limit={promo.usageLimit} />
-                  </td>
-                  <td className="px-5 py-4 text-slate-500">
-                    <div className="flex items-center gap-1.5">
-                      <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-                          d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                      <span className="text-xs">{promo.validFrom} to {promo.validUntil}</span>
-                    </div>
-                  </td>
-                  <td className="px-5 py-4">
-                    <StatusBadge status={promo.status} />
-                  </td>
-                  <td className="px-5 py-4" onClick={(e) => e.stopPropagation()}>
-                    <div className="flex items-center gap-2">
-                      <button onClick={() => setShowCreate(true)}
-                        className="text-slate-400 hover:text-blue-600 transition-colors p-1 rounded">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                      </button>
-                      <button onClick={() => handleDisable(promo.id)}
-                        className="text-slate-400 hover:text-amber-500 transition-colors p-1 rounded">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-                            d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-                        </svg>
-                      </button>
-                      <button onClick={() => handleDelete(promo.id)}
-                        className="text-slate-400 hover:text-rose-500 transition-colors p-1 rounded">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+              </tbody>
+            </table>
+          )}
         </div>
+
+        {data?.pagination && (
+          <div className="px-5 py-3 border-t border-slate-100 text-xs text-slate-400">
+            Showing {rawCoupons.length} of {data.pagination.total} coupons
+            &nbsp;·&nbsp; Page {data.pagination.page}
+          </div>
+        )}
       </div>
 
-      {showCreate && <CreateModal onClose={() => setShowCreate(false)} onCreate={handleCreate} />}
-      {detailPromo && (
+      {/* Modals */}
+      {showCreate && (
+        <CouponFormModal
+          mode="create"
+          isLoading={isCreating}
+          onClose={() => setShowCreate(false)}
+          onSubmit={handleCreate}
+        />
+      )}
+
+      {editPromo && (
+        <CouponFormModal
+          mode="edit"
+          initialData={editPromo}
+          isLoading={isUpdating}
+          onClose={() => setEditPromo(null)}
+          onSubmit={handleUpdate}
+        />
+      )}
+
+      {detailCouponId && (
         <DetailModal
-          promo={detailPromo}
-          onClose={() => setDetailPromo(null)}
-          onExpire={handleExpire}
+          couponId={detailCouponId}
+          isDisabling={isDisabling}
+          onClose={() => setDetailCouponId(null)}
           onDisable={handleDisable}
+          onEdit={(promo) => { setEditPromo(promo); setDetailCouponId(null); }}
         />
       )}
     </div>
