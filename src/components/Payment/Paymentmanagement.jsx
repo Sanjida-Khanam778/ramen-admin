@@ -162,7 +162,7 @@ const TAB_STATUS = {
 };
 
 export default function PaymentManagement() {
-  const [activeTab, setActiveTab] = useState("Pending");
+  const [activeTab, setActiveTab] = useState("All");
   const [selected, setSelected]   = useState(null);
   const [actionError, setActionError] = useState("");
 

@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useUpdateSettingMutation } from "../../Api/couponApi"; // adjust path as needed
+import { useState, useEffect } from "react";
+import { useGetSettingsQuery, useUpdateSettingMutation } from "../../Api/couponApi";
 
 const initialDrivers = [
   { id: 1, name: "John Parker", email: "john.parker@email.com", trips: 150, earnings: 5000, paid: 500, pending: 500, status: "paid", lastPayment: "2026-03-05" },
@@ -73,7 +73,7 @@ function DriverDetailModal({ driver, serviceRate, onClose, onSuspend, onSendRemi
         {driver.pending > 0 && (
           <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-3">
             <svg className="w-5 h-5 text-amber-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <circle cx="12" cy="12" r="10" strokeWidth="2"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01"/>
+              <circle cx="12" cy="12" r="10" strokeWidth="2" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01" />
             </svg>
             <div>
               <p className="text-sm font-semibold text-amber-700">Pending Payment Alert</p>
@@ -84,12 +84,12 @@ function DriverDetailModal({ driver, serviceRate, onClose, onSuspend, onSendRemi
         <div className="flex gap-3 pt-1">
           <button onClick={() => { onSendReminder(driver); onClose(); }}
             className="flex-1 flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold py-2.5 rounded-lg transition-colors">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
             Send Message
           </button>
           <button onClick={() => { onSuspend(driver.id); onClose(); }}
             className="flex-1 flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-700 text-white text-sm font-semibold py-2.5 rounded-lg transition-colors">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>
             Suspend Driver
           </button>
         </div>
@@ -122,8 +122,8 @@ function EmailModal({ driver, onClose }) {
           <button onClick={handleSend}
             className="flex-1 flex items-center justify-center gap-2 bg-blue-900 hover:bg-blue-800 text-white text-sm font-semibold py-2.5 rounded-lg transition-colors">
             {sent
-              ? <><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"/></svg> Sent!</>
-              : <><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg> Send Email</>}
+              ? <><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" /></svg> Sent!</>
+              : <><svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg> Send Email</>}
           </button>
           <button onClick={onClose} className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold py-2.5 rounded-lg transition-colors">Cancel</button>
         </div>
@@ -133,7 +133,6 @@ function EmailModal({ driver, onClose }) {
 }
 
 // ─── Spinner ──────────────────────────────────────────────────────────────────
-
 function Spinner({ color = "text-white" }) {
   return (
     <svg className={`animate-spin w-4 h-4 ${color}`} fill="none" viewBox="0 0 24 24">
@@ -144,12 +143,13 @@ function Spinner({ color = "text-white" }) {
 }
 
 // ─── Main ──────────────────────────────────────────────────────────────────────
-
 export default function RateCommissionManagement() {
   const [kmRate, setKmRate] = useState(1.5);
   const [serviceCharge, setServiceCharge] = useState(20);
+  const [baseFare, setBaseFare] = useState(100);
   const [editingKm, setEditingKm] = useState("");
   const [editingService, setEditingService] = useState("");
+  const [editingBaseFare, setEditingBaseFare] = useState("");
   const [isEditing, setIsEditing] = useState(false);
   const [settingsError, setSettingsError] = useState("");
 
@@ -160,9 +160,23 @@ export default function RateCommissionManagement() {
 
   const [updateSetting, { isLoading: isSaving }] = useUpdateSettingMutation();
 
+  // ── Fetch initial settings from API ──────────────────────────────────────────
+  const { data: settingsData, isLoading: isSettingsLoading } = useGetSettingsQuery();
+
+  useEffect(() => {
+    if (!settingsData) return;
+    const km   = parseFloat(settingsData?.per_kilo_driver_rate?.value);
+    const svc  = parseFloat(settingsData?.platform_rate_percent?.value);
+    const base = parseFloat(settingsData?.base_fare?.value);
+    if (!isNaN(km))   setKmRate(km);
+    if (!isNaN(svc))  setServiceCharge(svc);
+    if (!isNaN(base)) setBaseFare(base);
+  }, [settingsData]);
+
   const startEdit = () => {
     setEditingKm(String(kmRate));
     setEditingService(String(serviceCharge));
+    setEditingBaseFare(String(baseFare));
     setSettingsError("");
     setIsEditing(true);
   };
@@ -175,13 +189,15 @@ export default function RateCommissionManagement() {
   const saveEdit = async () => {
     const newKm = parseFloat(editingKm);
     const newSvc = parseFloat(editingService);
+    const newBase = parseFloat(editingBaseFare);
 
     if (isNaN(newKm) || newKm <= 0) { setSettingsError("Per KM rate must be a positive number."); return; }
     if (isNaN(newSvc) || newSvc <= 0 || newSvc > 100) { setSettingsError("Service charge must be between 1 and 100."); return; }
+    if (isNaN(newBase) || newBase <= 0) { setSettingsError("Base fare must be a positive number."); return; }
 
     setSettingsError("");
     try {
-      // Fire both PATCH calls in parallel
+      // Fire all three PATCH calls in parallel
       await Promise.all([
         updateSetting({
           key: "per_kilo_driver_rate",
@@ -193,9 +209,15 @@ export default function RateCommissionManagement() {
           value: String(newSvc),
           description: "Platform value",
         }).unwrap(),
+        updateSetting({
+          key: "base_fare",
+          value: String(newBase),
+          description: "A minimum price for car",
+        }).unwrap(),
       ]);
       setKmRate(newKm);
       setServiceCharge(newSvc);
+      setBaseFare(newBase);
       setIsEditing(false);
     } catch (err) {
       setSettingsError(err?.data?.detail || "Failed to save settings. Please try again.");
@@ -263,12 +285,27 @@ export default function RateCommissionManagement() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Loading skeleton for settings */}
+        {isSettingsLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {["blue", "purple", "emerald"].map((c) => (
+              <div key={c} className={`bg-${c}-50 border border-${c}-100 rounded-xl p-4 flex items-start gap-4 animate-pulse`}>
+                <div className={`bg-${c}-200 w-10 h-10 rounded-lg shrink-0`} />
+                <div className="flex-1 space-y-2 pt-1">
+                  <div className={`h-2.5 bg-${c}-200 rounded w-28`} />
+                  <div className={`h-7 bg-${c}-200 rounded w-20`} />
+                  <div className={`h-2 bg-${c}-100 rounded w-40`} />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Per KM Rate */}
           <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 flex items-start gap-4">
             <div className="bg-blue-900 w-10 h-10 rounded-lg flex items-center justify-center shrink-0 mt-1">
               <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
             <div className="flex-1 min-w-0">
@@ -294,7 +331,7 @@ export default function RateCommissionManagement() {
           <div className="bg-purple-50 border border-purple-100 rounded-xl p-4 flex items-start gap-4">
             <div className="bg-purple-600 w-10 h-10 rounded-lg flex items-center justify-center shrink-0 mt-1">
               <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h.01M17 17h.01M9.5 9.5l5 5M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a2 2 0 012-2z"/>
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h.01M17 17h.01M9.5 9.5l5 5M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a2 2 0 012-2z" />
               </svg>
             </div>
             <div className="flex-1 min-w-0">
@@ -315,17 +352,43 @@ export default function RateCommissionManagement() {
               <p className="text-xs text-purple-500 mt-1">Percentage charged on each ride as commission</p>
             </div>
           </div>
-        </div>
+
+          {/* Base Fare */}
+          <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4 flex items-start gap-4">
+            <div className="bg-emerald-600 w-10 h-10 rounded-lg flex items-center justify-center shrink-0 mt-1">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-semibold text-emerald-700 mb-1">Base Fare</p>
+              {isEditing ? (
+                <input
+                  type="number"
+                  value={editingBaseFare}
+                  onChange={(e) => setEditingBaseFare(e.target.value)}
+                  className="w-28 border border-emerald-300 bg-white rounded-lg px-3 py-1.5 text-xl font-bold text-emerald-700 outline-none focus:ring-2 focus:ring-emerald-500 transition"
+                  step="1"
+                  min="0"
+                />
+              ) : (
+                <p className="text-2xl font-bold text-emerald-700">${baseFare.toFixed(2)}</p>
+              )}
+              <p className="text-xs text-emerald-600 mt-1">Minimum price charged per ride</p>
+            </div>
+          </div>
+          </div>
+        )}
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-5">
         {[
-          { label: "Total Trips", value: totalTrips.toLocaleString(), color: "text-slate-800", icon: <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>, iconBg: "bg-blue-50" },
-          { label: "Driver Earnings", value: `$${totalEarnings.toLocaleString()}`, color: "text-slate-800", icon: <svg className="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>, iconBg: "bg-emerald-50" },
-          { label: "Platform Charges", value: `$${totalPlatformCharge.toLocaleString()}`, color: "text-slate-800", icon: <svg className="w-5 h-5 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>, iconBg: "bg-violet-50" },
-          { label: "Pending Charges", value: `$${totalPending.toLocaleString()}`, color: "text-rose-600", icon: <svg className="w-5 h-5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" strokeWidth="2"/><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01"/></svg>, iconBg: "bg-rose-50" },
-          { label: "Pending Drivers", value: pendingDriversCount, color: "text-orange-500", icon: <svg className="w-5 h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>, iconBg: "bg-orange-50" },
+          { label: "Total Trips", value: totalTrips.toLocaleString(), color: "text-slate-800", icon: <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>, iconBg: "bg-blue-50" },
+          { label: "Driver Earnings", value: `$${totalEarnings.toLocaleString()}`, color: "text-slate-800", icon: <svg className="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>, iconBg: "bg-emerald-50" },
+          { label: "Platform Charges", value: `$${totalPlatformCharge.toLocaleString()}`, color: "text-slate-800", icon: <svg className="w-5 h-5 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>, iconBg: "bg-violet-50" },
+          { label: "Pending Charges", value: `$${totalPending.toLocaleString()}`, color: "text-rose-600", icon: <svg className="w-5 h-5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" strokeWidth="2" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01" /></svg>, iconBg: "bg-rose-50" },
+          { label: "Pending Drivers", value: pendingDriversCount, color: "text-orange-500", icon: <svg className="w-5 h-5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>, iconBg: "bg-orange-50" },
         ].map((s) => (
           <div key={s.label} className="bg-white rounded-xl border border-slate-200 px-4 py-3 flex items-center gap-3 shadow-sm">
             <div className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${s.iconBg}`}>{s.icon}</div>
@@ -381,20 +444,20 @@ export default function RateCommissionManagement() {
                         <button onClick={() => setDetailDriver(driver)}
                           className="text-slate-400 hover:text-blue-600 transition-colors p-1 rounded" title="View Details">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                           </svg>
                         </button>
                         <button onClick={() => setEmailDriver(driver)}
                           className="text-slate-400 hover:text-amber-500 transition-colors p-1 rounded" title="Send Email">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                           </svg>
                         </button>
                         <button onClick={() => suspendDriver(driver.id)}
                           className="text-slate-400 hover:text-rose-500 transition-colors p-1 rounded" title="Suspend Driver">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                           </svg>
                         </button>
                       </div>
@@ -416,6 +479,7 @@ export default function RateCommissionManagement() {
           onSendReminder={setEmailDriver}
         />
       )}
+      
       {emailDriver && (
         <EmailModal driver={emailDriver} onClose={() => setEmailDriver(null)} />
       )}

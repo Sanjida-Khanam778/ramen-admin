@@ -10,6 +10,7 @@ import PromoCodeManagement from "../components/PromoCode/Promocodemanagement";
 import RateCommissionManagement from "../components/Ratecommission/Ratecommissionmanagement";
 import PaymentManagement from "../components/Payment/Paymentmanagement";
 import ComplaintManagement from "../components/Complaint/Complaintmanagement";
+import ComplaintDetail from "../components/Complaintdetail/Complaintdetail";
 
 export const router = createBrowserRouter([
   {
@@ -49,6 +50,10 @@ export const router = createBrowserRouter([
       {
         path: "/complaints",
         element: <ComplaintManagement />,
+      },
+      {
+        path: "/complaints/:complaintId",
+        element: <ComplaintDetail />,
       },
       {
         path: "/commission",
