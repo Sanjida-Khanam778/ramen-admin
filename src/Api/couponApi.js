@@ -172,6 +172,36 @@ export const couponApi = api.injectEndpoints({
         { type: "user-history" },
       ],
     }),
+
+    // ─── Pricing Rules ─────────────────────────────────────────────────────────
+
+    // GET /admin/pricing-rules/
+    getPricingRules: builder.query({
+      query: () => ({ url: `admin/pricing-rules/`, method: "GET" }),
+      providesTags: ["pricing-rules"],
+    }),
+
+    // POST /admin/pricing-rules/
+    createPricingRule: builder.mutation({
+      query: (data) => ({ url: `admin/pricing-rules/`, method: "POST", body: data }),
+      invalidatesTags: ["pricing-rules"],
+    }),
+
+    // PATCH /admin/pricing-rules/:pricingId/
+    updatePricingRule: builder.mutation({
+      query: ({ id, ...data }) => ({
+        url: `admin/pricing-rules/${id}/`,
+        method: "PATCH",
+        body: data,
+      }),
+      invalidatesTags: ["pricing-rules"],
+    }),
+
+    // DELETE /admin/pricing-rules/:pricingId/
+    deletePricingRule: builder.mutation({
+      query: (id) => ({ url: `admin/pricing-rules/${id}/`, method: "DELETE" }),
+      invalidatesTags: ["pricing-rules"],
+    }),
   }),
 });
 
@@ -191,4 +221,8 @@ export const {
   useGetComplaintsQuery,
   useGetUserComplaintHistoryQuery,
   useRespondToComplaintMutation,
+  useGetPricingRulesQuery,
+  useCreatePricingRuleMutation,
+  useUpdatePricingRuleMutation,
+  useDeletePricingRuleMutation,
 } = couponApi;

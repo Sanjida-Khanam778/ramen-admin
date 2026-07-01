@@ -11,15 +11,17 @@ import RateCommissionManagement from "../components/Ratecommission/Ratecommissio
 import PaymentManagement from "../components/Payment/Paymentmanagement";
 import ComplaintManagement from "../components/Complaint/Complaintmanagement";
 import ComplaintDetail from "../components/Complaintdetail/Complaintdetail";
+import { PrivateRoute } from "./PrivetRoute";
+import PricingManagement from "../components/Pricing/Pricing";
 
 export const router = createBrowserRouter([
   {
     path: "/",
     element: (
-      // <PrivateRoute>
-      //   <Dashboard />
-      // </PrivateRoute>
-      <Dashboard />
+      <PrivateRoute>
+        <Dashboard />
+      </PrivateRoute>
+      // <Dashboard />
     ),
     errorElement: <h1>404</h1>,
     children: [
@@ -60,8 +62,8 @@ export const router = createBrowserRouter([
         element: <RateCommissionManagement />,
       },
       {
-        path: "/settings",
-        element: <Settings />,
+        path: "/pricing",
+        element: <PricingManagement />,
       },
     ],
   },

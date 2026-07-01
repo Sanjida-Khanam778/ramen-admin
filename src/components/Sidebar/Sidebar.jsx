@@ -62,7 +62,15 @@ export default function Sidebar() {
              Promo Codes
             </NavLink>
           </li>
-         
+          <li>
+            <NavLink
+              to={"/pricing"}
+              className="flex items-center mx-4 rounded-2xl px-6 py-4"
+            >
+              <LuSettings className="mr-3 text-2xl" /> 
+              Pricing Management
+            </NavLink>
+          </li>
           <li>
             <NavLink
               to={"/commission"}
@@ -90,15 +98,7 @@ export default function Sidebar() {
               Complaints
             </NavLink>
           </li>
-          {/* <li>
-            <NavLink
-              to={"/settings"}
-              className="flex items-center mx-4 rounded-2xl px-6 py-4"
-            >
-              <LuSettings className="mr-3 text-2xl" /> 
-              Settings
-            </NavLink>
-          </li> */}
+         
         </ul>
       </nav>
       <Link to={"/login"}>
