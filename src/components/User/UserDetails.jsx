@@ -43,10 +43,12 @@ function SendEmailModal({ userId, email, name, onClose }) {
         subject,
         message,
       }).unwrap();
+      console.log(result)
       toast.success(result?.message || `Email sent to ${email}`);
       onClose();
     } catch (error) {
-      toast.error(error?.data?.message || "Failed to send email");
+      console.log(error)
+      toast.error(error?.data?.email[0] || "Failed to send email");
     }
   };
 

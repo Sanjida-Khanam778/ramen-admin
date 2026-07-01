@@ -7,9 +7,9 @@ import {
 } from "../../Api/couponApi";
 import { toast } from "react-hot-toast";
 
-// ─── Constants ────────────────────────────────────────────────────────────────
-const CAR_TYPES = ["economy", "premium", "comfort"];
-const RIDE_MODES = ["solo", "shared", "scheduled"];
+// ─── Constants ───
+const CAR_TYPES = ["economy", "premium", "comfort", "sub", "moto"];
+const RIDE_MODES = ["solo", "shared", "shuttle", "women_safe", "airport"];
 
 const BLANK_FORM = {
     car_type: "economy",

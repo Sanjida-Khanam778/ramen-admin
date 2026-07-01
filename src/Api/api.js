@@ -1,4 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { logout } from "../features/authSlice";
 
 const baseQuery = fetchBaseQuery({
   baseUrl: "https://rameen300.kawsarthedebugger.site/api/v1",
@@ -13,9 +14,19 @@ const baseQuery = fetchBaseQuery({
   },
 });
 
+const baseQueryWithAuth = async (args, api, extraOptions) => {
+  const result = await baseQuery(args, api, extraOptions);
+
+  if (result.error?.status === 401) {
+    api.dispatch(logout());
+  }
+
+  return result;
+};
+
 export const api = createApi({
   reducerPath: "baseApi",
-  baseQuery: baseQuery,
+  baseQuery: baseQueryWithAuth,
   tagTypes: ["users", "drivers", "auth", "stats"],
   endpoints: () => ({}),
 });
