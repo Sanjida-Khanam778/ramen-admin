@@ -11,7 +11,11 @@ import {
 } from "lucide-react";
 import UserGrowthChart from "../Charts/UserGrowthChart.jsx";
 import RevenueChart from "../Charts/RevenueChart.jsx";
-import { useGetPlatformAdminStatsQuery } from "../../Api/dashboardApi";
+import {
+  useGetPlatformAdminStatsQuery,
+  useGetAdminRideAnalyticsQuery,
+  useGetAdminEarningsAnalyticsQuery,
+} from "../../Api/dashboardApi";
 
 // Import avatar assets
 import userAvatar from "../../assets/images/userAvatar.png";
@@ -20,6 +24,8 @@ import generalAvatar from "../../assets/images/Avatar.png";
 
 export default function Overview() {
   const { data, isLoading, error } = useGetPlatformAdminStatsQuery();
+  const { data: rideAnalyticsData } = useGetAdminRideAnalyticsQuery();
+  const { data: earningsAnalyticsData } = useGetAdminEarningsAnalyticsQuery();
 
   const totals = data?.totals || {};
   const revenue = totals.revenue?.value ?? 0;
@@ -27,11 +33,26 @@ export default function Overview() {
   const drivers = totals.drivers?.value ?? 0;
 
   const userGrowth =
-    data?.growth?.users?.map((u) => ({ month: u.month, value: u.count })) ||
-    null;
+    Array.isArray(rideAnalyticsData?.graph_data) &&
+    rideAnalyticsData.graph_data.length > 0
+      ? rideAnalyticsData.graph_data.map((item) => ({
+          month: item.month_name || item.month,
+          value: Number(item.ride_count ?? item.value ?? item.count ?? 0),
+        }))
+      : data?.growth?.users?.map((u) => ({ month: u.month, value: u.count })) ||
+        null;
+
   const revenueGrowth =
-    data?.growth?.revenue?.map((r) => ({ month: r.month, total: r.total })) ||
-    null;
+    Array.isArray(earningsAnalyticsData?.graph_data) &&
+    earningsAnalyticsData.graph_data.length > 0
+      ? earningsAnalyticsData.graph_data.map((item) => ({
+          month: item.month_name || item.month,
+          total: Number(item.total_revenue ?? item.earnings ?? item.total ?? 0),
+        }))
+      : data?.growth?.revenue?.map((r) => ({
+          month: r.month,
+          total: r.total,
+        })) || null;
 
   const formatCurrency = (n) =>
     typeof n === "number"

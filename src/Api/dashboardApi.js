@@ -349,6 +349,22 @@ export const authApi = api.injectEndpoints({
       ],
     }),
 
+    getAdminRideAnalytics: builder.query({
+      query: () => ({
+        url: "admin/dashboard/rides/analytics/",
+        method: "GET",
+      }),
+      providesTags: ["analytics"],
+    }),
+
+    getAdminEarningsAnalytics: builder.query({
+      query: () => ({
+        url: "/admin/dashboard/earnings/analytics/",
+        method: "GET",
+      }),
+      providesTags: ["analytics"],
+    }),
+
     sendDriverEmail: builder.mutation({
       query: ({ driverId, email, subject, message }) => ({
         url: `/admin/drivers/${driverId}/send-email/`,
@@ -405,6 +421,8 @@ export const {
   useSendUserEmailMutation,
   useGetAdminDriversQuery,
   useGetAdminDriverDetailsQuery,
+  useGetAdminRideAnalyticsQuery,
+  useGetAdminEarningsAnalyticsQuery,
   useSendDriverEmailMutation,
   useUpdateDriverKycMutation,
   useGetUserDetailsQuery,

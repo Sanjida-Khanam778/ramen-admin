@@ -13,29 +13,93 @@ export default function RevenueChart({ data: propData }) {
   const [hoveredIdx, setHoveredIdx] = useState(null);
 
   // Normalize incoming data
-  const chartData =
+  const monthNames = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+
+  const getMonthLabel = (value) => {
+    if (!value) return null;
+
+    const strValue = String(value).trim();
+    const matchedMonth = monthNames.find(
+      (month) =>
+        month.toLowerCase() === strValue.toLowerCase() ||
+        strValue.toLowerCase().startsWith(month.toLowerCase()),
+    );
+
+    if (matchedMonth) return matchedMonth;
+
+    const parsed = new Date(strValue);
+    if (!Number.isNaN(parsed.getTime())) {
+      return parsed.toLocaleString("en-US", { month: "short" });
+    }
+
+    const monthMatch = strValue.match(/(\d{4})[-/](\d{1,2})/);
+    if (monthMatch) {
+      const parsedMonth = new Date(
+        Number(monthMatch[1]),
+        Number(monthMatch[2]) - 1,
+        1,
+      );
+      return parsedMonth.toLocaleString("en-US", { month: "short" });
+    }
+
+    return null;
+  };
+
+  const normalizedData =
     Array.isArray(propData) && propData.length > 0
       ? propData.map((d) => {
-          let m = d.month;
-          try {
-            const parsed = new Date(d.month);
-            if (!isNaN(parsed.getTime())) {
-              m = parsed.toLocaleString("en-US", { month: "short" });
-            }
-          } catch (e) {
-            // keep raw month
-          }
+          const month = getMonthLabel(d.month);
           return {
-            month: m,
-            total: d.total ?? d.value ?? 0,
+            month: month || d.month,
+            total: Number(d.total ?? d.value ?? 0),
           };
         })
       : defaultData;
 
+  const chartData = Array.from({ length: 6 }, (_, index) => {
+    const monthDate = new Date();
+    monthDate.setDate(1);
+    monthDate.setMonth(monthDate.getMonth() - (5 - index), 1);
+    const month = monthDate.toLocaleString("en-US", { month: "short" });
+    const foundItem = normalizedData.find(
+      (item) => getMonthLabel(item.month) === month,
+    );
+
+    return {
+      month,
+      total: foundItem ? Number(foundItem.total ?? 0) : 0,
+    };
+  });
+
   const width = 500;
   const height = 185;
-  const maxVal = 160000;
-  const ticks = [160000, 120000, 80000, 40000, 0];
+  const maxValue = Math.max(...chartData.map((d) => d.total || 0), 1);
+  const magnitude = 10 ** Math.floor(Math.log10(maxValue));
+  const niceUnit =
+    maxValue / magnitude <= 1
+      ? 1
+      : maxValue / magnitude <= 2
+        ? 2
+        : maxValue / magnitude <= 5
+          ? 5
+          : 10;
+  const maxVal = niceUnit * magnitude;
+  const ticks = Array.from({ length: 5 }, (_, i) =>
+    Math.round(maxVal - (maxVal / 4) * i),
+  );
 
   // Map values to coordinates
   const stepX = width / (chartData.length - 1 || 1);
@@ -63,7 +127,9 @@ export default function RevenueChart({ data: propData }) {
   return (
     <div className="bg-white rounded-xl p-6 border border-gray shadow-sm relative">
       <div className="mb-6">
-        <h3 className="text-base font-semibold text-[#1E293B]">Earnings Trends</h3>
+        <h3 className="text-base font-semibold text-[#1E293B]">
+          Earnings Trends
+        </h3>
       </div>
 
       <div className="flex gap-4">
