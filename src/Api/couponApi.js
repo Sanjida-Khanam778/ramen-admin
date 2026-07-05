@@ -76,6 +76,44 @@ export const couponApi = api.injectEndpoints({
       providesTags: ["settings"],
     }),
 
+    // GET /admin/transactions/stats/ — overview stats for transactions
+    getTransactionStats: builder.query({
+      query: () => ({
+        url: `admin/transactions/stats/`,
+        method: "GET",
+      }),
+      providesTags: ["transactions-stats"],
+    }),
+
+    // GET /admin/transactions/ — list all transactions with optional filters
+    getTransactions: builder.query({
+      query: (params = {}) => {
+        const q = new URLSearchParams();
+        if (params.payment_status)
+          q.set("payment_status", params.payment_status);
+        if (params.page) q.set("page", params.page);
+        if (params.limit) q.set("limit", params.limit);
+        if (params.search) q.set("search", params.search);
+        const qs = q.toString();
+        return {
+          url: qs ? `admin/transactions/?${qs}` : `admin/transactions/`,
+          method: "GET",
+        };
+      },
+      providesTags: ["transactions"],
+    }),
+
+    // GET /admin/transactions/:transactionId/ — transaction detail
+    getTransactionById: builder.query({
+      query: (transactionId) => ({
+        url: `admin/transactions/${transactionId}/`,
+        method: "GET",
+      }),
+      providesTags: (result, error, transactionId) => [
+        { type: "transaction-detail", id: transactionId },
+      ],
+    }),
+
     // POST /admin/settings/ — upsert a single setting by key
     // body: { key, value, description }
     updateSetting: builder.mutation({
@@ -91,12 +129,15 @@ export const couponApi = api.injectEndpoints({
     getWithdrawals: builder.query({
       query: (params = {}) => {
         const q = new URLSearchParams();
-        if (params.status)        q.set("status", params.status);
+        if (params.status) q.set("status", params.status);
         if (params.payout_method) q.set("payout_method", params.payout_method);
-        if (params.search)        q.set("search", params.search);
-        if (params.ordering)      q.set("ordering", params.ordering);
+        if (params.search) q.set("search", params.search);
+        if (params.ordering) q.set("ordering", params.ordering);
         const qs = q.toString();
-        return { url: qs ? `admin/withdrawals/?${qs}` : `admin/withdrawals/`, method: "GET" };
+        return {
+          url: qs ? `admin/withdrawals/?${qs}` : `admin/withdrawals/`,
+          method: "GET",
+        };
       },
       providesTags: ["withdrawals"],
     }),
@@ -183,7 +224,11 @@ export const couponApi = api.injectEndpoints({
 
     // POST /admin/pricing-rules/
     createPricingRule: builder.mutation({
-      query: (data) => ({ url: `admin/pricing-rules/`, method: "POST", body: data }),
+      query: (data) => ({
+        url: `admin/pricing-rules/`,
+        method: "POST",
+        body: data,
+      }),
       invalidatesTags: ["pricing-rules"],
     }),
 
@@ -213,6 +258,9 @@ export const {
   useDisableCouponMutation,
   useDeleteCouponMutation,
   useGetSettingsQuery,
+  useGetTransactionStatsQuery,
+  useGetTransactionsQuery,
+  useGetTransactionByIdQuery,
   useUpdateSettingMutation,
   useGetWithdrawalsQuery,
   useGetWithdrawalByIdQuery,

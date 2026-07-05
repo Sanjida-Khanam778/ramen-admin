@@ -13,9 +13,9 @@ import {
   X,
 } from "lucide-react";
 import {
-  useBlockPlatformUserMutation,
   useGetUserDetailsQuery,
   useSendUserEmailMutation,
+  useUpdatePlatformUserStatusMutation,
 } from "../../Api/dashboardApi";
 import userAvatar from "../../assets/images/userAvatar.png";
 import driverAvatar from "../../assets/images/driverAvatar.png";
@@ -43,11 +43,11 @@ function SendEmailModal({ userId, email, name, onClose }) {
         subject,
         message,
       }).unwrap();
-      console.log(result)
+      console.log(result);
       toast.success(result?.message || `Email sent to ${email}`);
       onClose();
     } catch (error) {
-      console.log(error)
+      console.log(error);
       toast.error(error?.data?.email[0] || "Failed to send email");
     }
   };
@@ -129,12 +129,16 @@ function StatCard({ icon, iconBg, iconColor, label, value }) {
 
   return (
     <div className="bg-white rounded-xl border border-gray/50 shadow-sm p-5 flex items-center gap-4">
-      <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${iconBg}`}>
+      <div
+        className={`w-11 h-11 rounded-xl flex items-center justify-center ${iconBg}`}
+      >
         <IconComponent className={`w-5 h-5 ${iconColor}`} />
       </div>
       <div>
         <div className="text-xs text-gray-500">{label}</div>
-        <div className="text-xl font-semibold text-gray-900 mt-0.5">{value}</div>
+        <div className="text-xl font-semibold text-gray-900 mt-0.5">
+          {value}
+        </div>
       </div>
     </div>
   );
@@ -146,7 +150,7 @@ const UserDetails = ({ user, onBack }) => {
   const [localStatus, setLocalStatus] = useState(user?.status || "Active");
 
   const selectedUserId = user?.id || user?.user_id;
-  const [blockUser] = useBlockPlatformUserMutation();
+  const [updateUserStatus] = useUpdatePlatformUserStatusMutation();
   const {
     data: userDetails,
     isLoading: loadingDetails,
@@ -176,7 +180,10 @@ const UserDetails = ({ user, onBack }) => {
     return (
       <div className="p-8 flex flex-col items-center justify-center min-h-[400px]">
         <p className="text-gray-500">No user selected.</p>
-        <button onClick={onBack} className="mt-4 px-5 py-2 rounded-xl border border-gray/50 text-sm">
+        <button
+          onClick={onBack}
+          className="mt-4 px-5 py-2 rounded-xl border border-gray/50 text-sm"
+        >
           Go Back
         </button>
       </div>
@@ -186,18 +193,30 @@ const UserDetails = ({ user, onBack }) => {
   const fullName = detailsUser.full_name || detailsUser.name || "User";
   const email = detailsUser.email || "";
   const phone = detailsUser.phone_number || detailsUser.phone || "";
-  const isDriver = detailsUser.user_type === "driver" || !!detailsUser.is_driver;
+  const isDriver =
+    detailsUser.user_type === "driver" || !!detailsUser.is_driver;
   const userId = detailsUser.id || detailsUser.user_id || "-";
-  const avatar = detailsUser.profile_picture || detailsUser.avatar || (isDriver ? driverAvatar : userAvatar);
+  const avatar =
+    detailsUser.profile_picture ||
+    detailsUser.avatar ||
+    (isDriver ? driverAvatar : userAvatar);
 
   const isBlocked =
     localStatus.toLowerCase() === "suspended" ||
     localStatus.toLowerCase() === "blocked" ||
     localStatus.toLowerCase() === "banned";
 
-  const totalTrips = detailsUser.total_trips ?? detailsUser.driver_total_trip_count ?? null;
-  const completedTrips = detailsUser.completed_trips ?? detailsUser.driver_completed_trip_count ?? null;
-  const rating = detailsUser.average_rating ?? detailsUser.rating ?? detailsUser.driver_ratings ?? null;
+  const totalTrips =
+    detailsUser.total_trips ?? detailsUser.driver_total_trip_count ?? null;
+  const completedTrips =
+    detailsUser.completed_trips ??
+    detailsUser.driver_completed_trip_count ??
+    null;
+  const rating =
+    detailsUser.average_rating ??
+    detailsUser.rating ??
+    detailsUser.driver_ratings ??
+    null;
   const earnings = detailsUser.total_earnings ?? null;
 
   const dateJoined = detailsUser.date_joined
@@ -209,19 +228,17 @@ const UserDetails = ({ user, onBack }) => {
     : "N/A";
 
   const handleToggleBlock = async () => {
-    const willBlock = !isBlocked;
-    const newStatus = willBlock ? "Suspended" : "Active";
+    const willActivate = isBlocked;
+    const newStatus = willActivate ? "Active" : "Suspended";
 
-    setLocalStatus(newStatus);
-
+    setBlockingUser(true);
     try {
-      setBlockingUser(true);
       if (userId && userId !== "-") {
-        await blockUser({ userId, status: willBlock }).unwrap();
+        await updateUserStatus({ userId, is_active: willActivate }).unwrap();
       }
-      toast.success(willBlock ? "User suspended." : "User activated.");
+      setLocalStatus(newStatus);
+      toast.success(willActivate ? "User activated." : "User suspended.");
     } catch {
-      setLocalStatus(isBlocked ? "Suspended" : "Active");
       toast.error("Failed to update user status.");
     } finally {
       setBlockingUser(false);
@@ -261,7 +278,9 @@ const UserDetails = ({ user, onBack }) => {
           </button>
           <div>
             <p className="text-xl font-semibold text-gray-400">User Profile</p>
-            <h1 className="text-sm text-[#4A5565]">View and manage user details</h1>
+            <h1 className="text-sm text-[#4A5565]">
+              View and manage user details
+            </h1>
           </div>
         </div>
 
@@ -279,12 +298,16 @@ const UserDetails = ({ user, onBack }) => {
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-4 flex-wrap">
                 <div>
-                  <h2 className="text-lg font-semibold text-gray-900">{fullName}</h2>
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    {fullName}
+                  </h2>
                   <p className="text-sm text-[#4A5565] mt-0.5">ID: {userId}</p>
                 </div>
                 <span
                   className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
-                    isBlocked ? "bg-red-50 text-red-600" : "bg-green-50 text-green-600"
+                    isBlocked
+                      ? "bg-red-50 text-red-600"
+                      : "bg-green-50 text-green-600"
                   }`}
                 >
                   {isBlocked ? "suspended" : "active"}
@@ -310,7 +333,9 @@ const UserDetails = ({ user, onBack }) => {
                 </span>
                 <span
                   className={`items-center w-fit px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    isDriver ? "bg-blue-50 text-blue-600" : "bg-purple-50 text-purple-600"
+                    isDriver
+                      ? "bg-blue-50 text-blue-600"
+                      : "bg-purple-50 text-purple-600"
                   }`}
                 >
                   {detailsUser.user_type || (isDriver ? "driver" : "passenger")}
@@ -333,7 +358,9 @@ const UserDetails = ({ user, onBack }) => {
             iconBg="bg-green-50"
             iconColor="text-green-500"
             label="Completed Trips"
-            value={completedTrips !== null ? completedTrips.toLocaleString() : "-"}
+            value={
+              completedTrips !== null ? completedTrips.toLocaleString() : "-"
+            }
           />
           <StatCard
             icon={Star}
@@ -359,7 +386,9 @@ const UserDetails = ({ user, onBack }) => {
         </div>
 
         <div className="bg-white rounded-2xl border border-gray/50 shadow-sm p-6">
-          <h3 className="text-sm font-semibold text-gray-700 mb-4">Admin Actions</h3>
+          <h3 className="text-sm font-semibold text-gray-700 mb-4">
+            Admin Actions
+          </h3>
           <div className="flex items-center flex-wrap gap-3">
             <button
               onClick={handleToggleBlock}

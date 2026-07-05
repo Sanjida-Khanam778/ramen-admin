@@ -63,6 +63,16 @@ export const authApi = api.injectEndpoints({
       invalidatesTags: ["users"],
     }),
 
+    // Activate/suspend user via admin action endpoint
+    updatePlatformUserStatus: builder.mutation({
+      query: ({ userId, is_active }) => ({
+        url: `/admin/users/${userId}/action/`,
+        method: "POST",
+        body: { is_active },
+      }),
+      invalidatesTags: ["users"],
+    }),
+
     withdrawEarnings: builder.mutation({
       query: (data) => ({
         url: `platform/admin/withdrawals/`,
@@ -419,4 +429,5 @@ export const {
   useGetPlatformAdminProfileQuery,
   useUpdatePlatformAdminProfileMutation,
   useGetCommisionRateQuery,
+  useUpdatePlatformUserStatusMutation
 } = authApi;

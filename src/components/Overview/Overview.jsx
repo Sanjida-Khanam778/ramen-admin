@@ -46,21 +46,13 @@ export default function Overview() {
   const metrics = [
     {
       title: "Total Users",
-      value: isLoading
-        ? "12,847"
-        : users
-          ? users.toLocaleString()
-          : "12,847",
+      value: isLoading ? "12,847" : users ? users.toLocaleString() : "12,847",
       icon: Users,
       iconBg: "bg-[#2563EB]", // Blue
     },
     {
       title: "Total Drivers",
-      value: isLoading
-        ? "4,523"
-        : drivers
-          ? drivers.toLocaleString()
-          : "4,523",
+      value: isLoading ? "4,523" : drivers ? drivers.toLocaleString() : "4,523",
       icon: Car,
       iconBg: "bg-[#00D154]", // Green
     },
@@ -200,7 +192,7 @@ export default function Overview() {
       date: "2026-03-08",
       avatar: driverAvatar,
     },
-  ]; 
+  ];
 
   return (
     <div className="bg-[#F8FAFC] p-8 font-nunito">
@@ -292,7 +284,10 @@ export default function Overview() {
             </h3>
             <div className="space-y-4">
               {newlyRegisteredUsers.map((u) => (
-                <div key={u.id} className="flex items-center justify-between pb-3 border-b border-gray/50 last:border-b-0 last:pb-0">
+                <div
+                  key={u.id}
+                  className="flex items-center justify-between pb-3 border-b border-gray/50 last:border-b-0 last:pb-0"
+                >
                   <div className="flex items-center gap-3">
                     <img
                       src={u.avatar}
