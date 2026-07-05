@@ -6,6 +6,7 @@ import { router } from "./Routers/Router.jsx";
 import { Provider } from "react-redux";
 import { store } from "./Stores/store.js";
 import { Toaster } from "react-hot-toast";
+import "./i18n";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -13,5 +14,5 @@ createRoot(document.getElementById("root")).render(
       <Toaster />
       <RouterProvider router={router} />
     </Provider>
-  </StrictMode>
+  </StrictMode>,
 );

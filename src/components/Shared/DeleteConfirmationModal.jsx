@@ -1,4 +1,5 @@
 import { RxCross2 } from "react-icons/rx";
+import { useTranslation } from "react-i18next";
 import Modal from "./Modal";
 import Button from "./Button";
 
@@ -6,10 +7,14 @@ const DeleteConfirmationModal = ({
   isOpen,
   onClose,
   onConfirm,
-  title = "Are you sure ?",
-  message = "Do you want to delete this item ?",
-  confirmText = "Delete",
+  title,
+  message,
+  confirmText,
 }) => {
+  const { t } = useTranslation();
+  const modalTitle = title || t("deleteModal.title");
+  const modalMessage = message || t("deleteModal.message");
+  const modalConfirmText = confirmText || t("deleteModal.confirmText");
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
@@ -21,14 +26,14 @@ const DeleteConfirmationModal = ({
 
           {/* Warning message */}
           <h2 className="text-red-500 font-semibold text-xl mt-6 mb-8">
-            {title}
+            {modalTitle}
           </h2>
 
           {/* Confirmation question */}
-          <p className="text-primary text-lg mb-8">{message}</p>
+          <p className="text-primary text-lg mb-8">{modalMessage}</p>
 
           <div onClick={onConfirm}>
-            <Button>{confirmText}</Button>
+            <Button>{modalConfirmText}</Button>
           </div>
         </div>
       </div>

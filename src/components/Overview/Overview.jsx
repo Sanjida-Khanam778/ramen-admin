@@ -18,6 +18,7 @@ import {
   useGetAdminRecentRidesQuery,
   useGetAdminRecentUsersQuery,
 } from "../../Api/dashboardApi";
+import { useTranslation } from "react-i18next";
 
 // Import avatar assets
 import userAvatar from "../../assets/images/userAvatar.png";
@@ -25,6 +26,7 @@ import driverAvatar from "../../assets/images/driverAvatar.png";
 import generalAvatar from "../../assets/images/Avatar.png";
 
 export default function Overview() {
+  const { t } = useTranslation();
   const { data, isLoading, error } = useGetPlatformAdminStatsQuery();
   const { data: rideAnalyticsData } = useGetAdminRideAnalyticsQuery();
   const { data: earningsAnalyticsData } = useGetAdminEarningsAnalyticsQuery();
@@ -70,19 +72,19 @@ export default function Overview() {
   // Card metrics parsing with mock fallbacks matching the mockup
   const metrics = [
     {
-      title: "Total Users",
+      title: t("overview.metrics.totalUsers"),
       value: isLoading ? "12,847" : users ? users.toLocaleString() : "12,847",
       icon: Users,
       iconBg: "bg-[#2563EB]", // Blue
     },
     {
-      title: "Total Drivers",
+      title: t("overview.metrics.totalDrivers"),
       value: isLoading ? "4,523" : drivers ? drivers.toLocaleString() : "4,523",
       icon: Car,
       iconBg: "bg-[#00D154]", // Green
     },
     {
-      title: "Total Passengers",
+      title: t("overview.metrics.totalPassengers"),
       value: isLoading
         ? "8,324"
         : users && drivers
@@ -92,7 +94,7 @@ export default function Overview() {
       iconBg: "bg-[#A855F7]", // Purple
     },
     {
-      title: "Total Trips",
+      title: t("overview.metrics.totalTrips"),
       value: isLoading
         ? "45,678"
         : totals.trips?.value
@@ -102,7 +104,7 @@ export default function Overview() {
       iconBg: "bg-[#FF6600]", // Orange
     },
     {
-      title: "Completed Trips",
+      title: t("overview.metrics.completedTrips"),
       value: isLoading
         ? "43,892"
         : totals.completed_trips?.value
@@ -112,7 +114,7 @@ export default function Overview() {
       iconBg: "bg-[#00C5A0]", // Teal
     },
     {
-      title: "Cancelled Trips",
+      title: t("overview.metrics.cancelledTrips"),
       value: isLoading
         ? "1,786"
         : totals.cancelled_trips?.value
@@ -122,7 +124,7 @@ export default function Overview() {
       iconBg: "bg-[#EF4444]", // Red
     },
     {
-      title: "Total Earnings",
+      title: t("overview.metrics.totalEarnings"),
       value: isLoading
         ? "$1,234,567.89"
         : revenue
@@ -132,7 +134,7 @@ export default function Overview() {
       iconBg: "bg-[#00D154]", // Green
     },
     {
-      title: "Pending Payments",
+      title: t("overview.metrics.pendingPayments"),
       value: isLoading
         ? "$23,456.50"
         : totals.pending_payments?.value
@@ -142,7 +144,7 @@ export default function Overview() {
       iconBg: "bg-[#EAB308]", // Yellow/Gold
     },
     {
-      title: "Average Rating",
+      title: t("overview.metrics.averageRating"),
       value: isLoading
         ? "4.7"
         : totals.average_rating?.value
@@ -176,8 +178,13 @@ export default function Overview() {
     Array.isArray(recentRidesData?.data) && recentRidesData.data.length > 0
       ? recentRidesData.data.slice(0, 5).map((ride) => ({
           id: ride.transaction_id,
-          name: ride.passenger?.name || "Guest Passenger",
-          action: `rode from ${ride.ride_details?.pickup_location?.split(",")[0] || "Pickup"} to ${ride.ride_details?.dropoff_location?.split(",")[0] || "Dropoff"}`,
+          name: ride.passenger?.name || t("overview.guestPassenger"),
+          action: t("overview.rideFrom", {
+            pickup:
+              ride.ride_details?.pickup_location?.split(",")[0] || "Pickup",
+            dropoff:
+              ride.ride_details?.dropoff_location?.split(",")[0] || "Dropoff",
+          }),
           time: getRelativeTime(ride.timestamps?.created_at),
         }))
       : [
@@ -219,7 +226,7 @@ export default function Overview() {
       ? recentUsersData.data.map((user) => ({
           id: user.id,
           name: user.name,
-          role: user.user_type,
+          role: t(`overview.roles.${user.user_type}`) || user.user_type,
           date: new Date(user.date_joined).toLocaleDateString("en-US", {
             year: "numeric",
             month: "2-digit",
@@ -271,11 +278,9 @@ export default function Overview() {
         {/* Dashboard Header */}
         <div className="mb-8">
           <h1 className="text-2xl font-semibold text-[#1E293B]">
-            Dashboard Overview
+            {t("overview.title")}
           </h1>
-          <p className="text-sm text-[#6A7282] mt-1">
-            Monitor your ride-sharing platform performance
-          </p>
+          <p className="text-sm text-[#6A7282] mt-1">{t("overviewSubtitle")}</p>
         </div>
 
         {/* 9 Stat Cards Grid */}
@@ -316,7 +321,7 @@ export default function Overview() {
           {/* Recent Activity Card */}
           <div className="bg-white rounded-xl p-6 border border-gray shadow-sm">
             <h3 className="text-base font-semibold text-[#1E293B] mb-5">
-              Recent Rides
+              {t("overview.recentRides")}
             </h3>
             <div className="space-y-4">
               {recentActivities.map((activity) => (
@@ -344,7 +349,7 @@ export default function Overview() {
           {/* Newly Registered Users Card */}
           <div className="bg-white rounded-xl p-6 border border-gray shadow-sm">
             <h3 className="text-base font-semibold text-[#1E293B] mb-5">
-              Newly Registered Users
+              {t("overview.newlyRegisteredUsers")}
             </h3>
             <div className="space-y-4">
               {newlyRegisteredUsers.map((u) => (

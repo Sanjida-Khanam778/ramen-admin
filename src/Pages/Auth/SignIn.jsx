@@ -5,6 +5,7 @@ import { Eye, EyeOff, Mail, Lock, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useDispatch } from "react-redux";
+import { useTranslation } from "react-i18next";
 import { setCredentials } from "../../features/authSlice";
 import { useLoginMutation } from "../../Api/authApi";
 
@@ -12,6 +13,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [login, { isLoading }] = useLoginMutation();
@@ -24,12 +26,12 @@ export default function LoginPage() {
     try {
       const res = await login(data).unwrap();
       dispatch(setCredentials(res));
-      toast.success("Login successful!");
+      toast.success(t("login.toastSuccess"));
       setEmail("");
       setPassword("");
       navigate("/");
     } catch (error) {
-      toast.error(error.data?.message || "Login failed");
+      toast.error(error.data?.message || t("login.toastError"));
     }
   };
 
@@ -63,30 +65,30 @@ export default function LoginPage() {
             </div>
           </div>
           <h1 className="text-white text-sm font-light tracking-wider">
-            Follow
+            {t("login.brand")}
           </h1>
         </div>
 
         {/* Form Section */}
         <div className="px-8 pb-8">
           <div className="mb-8 text-center">
-            <h2 className="text-white text-3xl font-bold mb-2">Welcome Back</h2>
-            <p className="text-blue-100 text-sm">
-              Sign in to your admin account
-            </p>
+            <h2 className="text-white text-3xl font-bold mb-2">
+              {t("login.welcomeBack")}
+            </h2>
+            <p className="text-blue-100 text-sm">{t("login.subtitle")}</p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-5">
             {/* Email Field */}
             <div>
               <label className="block text-white text-xs font-semibold mb-2 uppercase tracking-wide">
-                Email Address
+                {t("login.emailAddress")}
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white" />
                 <input
                   type="email"
-                  placeholder="admin@gmail.com"
+                  placeholder={t("login.placeholderEmail")}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full pl-10 pr-4 py-3 text-white border border-white bg-transparent rounded-lg focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 placeholder-white transition-all"
@@ -98,13 +100,13 @@ export default function LoginPage() {
             {/* Password Field */}
             <div>
               <label className="block text-white text-xs font-semibold mb-2 uppercase tracking-wide">
-                Password
+                {t("login.password")}
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white" />
                 <input
                   type={showPassword ? "text" : "password"}
-                  placeholder="Enter your password"
+                  placeholder={t("login.placeholderPassword")}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full pl-10 pr-12 py-3 text-white border bg-transparent border-white rounded-lg focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50 placeholder-white transition-all"
@@ -133,12 +135,12 @@ export default function LoginPage() {
               {isLoading ? (
                 <>
                   <div className="w-5 h-5 border-2 border-blue-900 border-t-transparent rounded-full animate-spin" />
-                  Signing in...
+                  {t("login.signingIn")}
                 </>
               ) : (
                 <>
                   <ArrowRight className="w-5 h-5" />
-                  Sign In
+                  {t("login.signIn")}
                 </>
               )}
             </button>

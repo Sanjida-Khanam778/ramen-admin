@@ -1,0 +1,63 @@
+{
+  "welcome": "Willkommen",
+  "adminDashboard": "Admin-Dashboard",
+  "notifications": "Benachrichtigungen",
+  "unread": "{{count}} ungelesen",
+  "markAllRead": "Alle als gelesen markieren",
+  "viewAllActivity": "Alle Aktivitäten ansehen",
+  "language": "Sprache",
+  "english": "Englisch",
+  "german": "Deutsch",
+  "nav": {
+    "dashboard": "Dashboard",
+    "userManagement": "Benutzerverwaltung",
+    "driverVerification": "Fahrerprüfung",
+    "promoCodes": "Aktionscodes",
+    "pricingManagement": "Preisverwaltung",
+    "rateCommission": "Gebühren & Provision",
+    "withdrawManagement": "Auszahlungsverwaltung",
+    "complaints": "Beschwerden",
+    "logout": "Abmelden"
+  },
+  "login": {
+    "brand": "Follow",
+    "welcomeBack": "Willkommen zurück",
+    "subtitle": "Melden Sie sich bei Ihrem Admin-Konto an",
+    "emailAddress": "E-Mail-Adresse",
+    "password": "Passwort",
+    "placeholderEmail": "admin@gmail.com",
+    "placeholderPassword": "Geben Sie Ihr Passwort ein",
+    "signIn": "Anmelden",
+    "signingIn": "Anmeldung läuft...",
+    "toastSuccess": "Anmeldung erfolgreich!",
+    "toastError": "Anmeldung fehlgeschlagen"
+  },
+  "overview": {
+    "title": "Dashboard-Übersicht",
+    "subtitle": "Beobachten Sie die Leistung Ihrer Mitfahrplattform",
+    "metrics": {
+      "totalUsers": "Gesamtzahl Nutzer",
+      "totalDrivers": "Gesamtzahl Fahrer",
+      "totalPassengers": "Gesamtzahl Passagiere",
+      "totalTrips": "Gesamtfahrten",
+      "completedTrips": "Abgeschlossene Fahrten",
+      "cancelledTrips": "Stornierte Fahrten",
+      "totalEarnings": "Gesamteinnahmen",
+      "pendingPayments": "Ausstehende Zahlungen",
+      "averageRating": "Durchschnittliche Bewertung"
+    },
+    "recentRides": "Kürzliche Fahrten",
+    "newlyRegisteredUsers": "Neu registrierte Nutzer",
+    "guestPassenger": "Gastpassagier",
+    "rideFrom": "fuhr von {{pickup}} nach {{dropoff}}",
+    "roles": {
+      "driver": "fahrer",
+      "passenger": "passagier"
+    }
+  },
+  "deleteModal": {
+    "title": "Sind Sie sicher?",
+    "message": "Möchten Sie dieses Element löschen?",
+    "confirmText": "Löschen"
+  }
+}

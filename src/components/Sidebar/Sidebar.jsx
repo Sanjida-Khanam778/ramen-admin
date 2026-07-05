@@ -1,6 +1,15 @@
 import { Link, NavLink, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import "./Sidebar.css";
-import { LuCircleUserRound, LuCreditCard, LuDumbbell, LuLayoutDashboard, LuSettings, LuTag, LuUsers } from "react-icons/lu";
+import {
+  LuCircleUserRound,
+  LuCreditCard,
+  LuDumbbell,
+  LuLayoutDashboard,
+  LuSettings,
+  LuTag,
+  LuUsers,
+} from "react-icons/lu";
 import { LogOut } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { logout } from "../../features/authSlice";
@@ -13,35 +22,42 @@ import { FiMessageSquare } from "react-icons/fi";
 import logo from "../../assets/images/logo.png";
 
 export default function Sidebar() {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const location = useLocation();
   const handleLogout = () => {
     dispatch(logout());
   };
   return (
-    <div className="text-white h-screen sticky left-0 z-20 flex flex-col justify-between w-48 md:w-64 xl:w-72" style={{
-          background: `linear-gradient(90deg, #001A55 0%, #0241A3 100%)`,
-        }}>
+    <div
+      className="text-white h-screen sticky left-0 z-20 flex flex-col justify-between w-48 md:w-64 xl:w-72"
+      style={{
+        background: `linear-gradient(90deg, #001A55 0%, #0241A3 100%)`,
+      }}
+    >
       {/* Ober Logo */}
       <div className="mt-12 flex justify-center">
-      <img src={logo} className="w-20" alt="Ober Logo" />
+        <img src={logo} className="w-20" alt="Ober Logo" />
       </div>
 
       <nav className="flex-1 font-nunito mt-10">
         <ul className="space-y-2">
           <li>
-            <NavLink to={"/"} className="flex items-center mx-4 rounded-2xl px-6 py-4">
+            <NavLink
+              to={"/"}
+              className="flex items-center mx-4 rounded-2xl px-6 py-4"
+            >
               <LuLayoutDashboard className="mr-3 text-2xl" />
-              Dashboard
+              {t("nav.dashboard")}
             </NavLink>
           </li>
           <li>
             <NavLink
               to={"/user"}
-              className="flex items-center mx-4 rounded-2xl px-6 py-4">
-            
+              className="flex items-center mx-4 rounded-2xl px-6 py-4"
+            >
               <LuUsers className="mr-3 text-2xl" />
-              User Management
+              {t("nav.userManagement")}
             </NavLink>
           </li>
           <li>
@@ -50,7 +66,7 @@ export default function Sidebar() {
               className="flex items-center mx-4 rounded-2xl px-6 py-4"
             >
               <BiUserCheck className="mr-3 text-3xl" />
-              Driver Verification
+              {t("nav.driverVerification")}
             </NavLink>
           </li>
           <li>
@@ -59,7 +75,7 @@ export default function Sidebar() {
               className="flex items-center mx-4 rounded-2xl px-6 py-4"
             >
               <LuTag className="text-xl mr-3" />
-             Promo Codes
+              {t("nav.promoCodes")}
             </NavLink>
           </li>
           <li>
@@ -67,8 +83,8 @@ export default function Sidebar() {
               to={"/pricing"}
               className="flex items-center mx-4 rounded-2xl px-6 py-4"
             >
-              <LuSettings className="mr-3 text-2xl" /> 
-              Pricing Management
+              <LuSettings className="mr-3 text-2xl" />
+              {t("nav.pricingManagement")}
             </NavLink>
           </li>
           <li>
@@ -77,7 +93,7 @@ export default function Sidebar() {
               className="flex items-center mx-4 rounded-2xl px-6 py-4"
             >
               <FaArrowTrendUp className="mr-3 text-xl" />
-              Rate & Commission
+              {t("nav.rateCommission")}
             </NavLink>
           </li>
           <li>
@@ -86,7 +102,7 @@ export default function Sidebar() {
               className="flex items-center mx-4 rounded-2xl px-6 py-4"
             >
               <LuCreditCard className="mr-3 text-2xl" />
-              Withdraw Management
+              {t("nav.withdrawManagement")}
             </NavLink>
           </li>
           <li>
@@ -95,10 +111,9 @@ export default function Sidebar() {
               className="flex items-center mx-4 rounded-2xl px-6 py-4"
             >
               <FiMessageSquare className="mr-3 text-xl" />
-              Complaints
+              {t("nav.complaints")}
             </NavLink>
           </li>
-         
         </ul>
       </nav>
       <Link to={"/login"}>
@@ -107,7 +122,7 @@ export default function Sidebar() {
           className="flex items-center mx-4 rounded-2xl px-6 py-4 text-xl w-full text-white"
         >
           <LogOut className="mr-3" />
-          Logout
+          {t("nav.logout")}
         </button>
       </Link>
     </div>
