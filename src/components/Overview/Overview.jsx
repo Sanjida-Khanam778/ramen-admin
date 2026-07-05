@@ -16,6 +16,7 @@ import {
   useGetAdminRideAnalyticsQuery,
   useGetAdminEarningsAnalyticsQuery,
   useGetAdminRecentRidesQuery,
+  useGetAdminRecentUsersQuery,
 } from "../../Api/dashboardApi";
 
 // Import avatar assets
@@ -28,6 +29,7 @@ export default function Overview() {
   const { data: rideAnalyticsData } = useGetAdminRideAnalyticsQuery();
   const { data: earningsAnalyticsData } = useGetAdminEarningsAnalyticsQuery();
   const { data: recentRidesData } = useGetAdminRecentRidesQuery();
+  const { data: recentUsersData } = useGetAdminRecentUsersQuery();
 
   const totals = data?.totals || {};
   const revenue = totals.revenue?.value ?? 0;
@@ -211,37 +213,50 @@ export default function Overview() {
           },
         ];
 
-  // Newly registered users data
-  const newlyRegisteredUsers = [
-    {
-      id: 1,
-      name: "Alex Murphy",
-      role: "passenger",
-      date: "2026-03-09",
-      avatar: userAvatar,
-    },
-    {
-      id: 2,
-      name: "Jessica Lee",
-      role: "driver",
-      date: "2026-03-09",
-      avatar: driverAvatar,
-    },
-    {
-      id: 3,
-      name: "Tom Hardy",
-      role: "passenger",
-      date: "2026-03-08",
-      avatar: generalAvatar,
-    },
-    {
-      id: 4,
-      name: "Rachel Green",
-      role: "driver",
-      date: "2026-03-08",
-      avatar: driverAvatar,
-    },
-  ];
+  // Newly registered users data from API or fallback
+  const newlyRegisteredUsers =
+    Array.isArray(recentUsersData?.data) && recentUsersData.data.length > 0
+      ? recentUsersData.data.map((user) => ({
+          id: user.id,
+          name: user.name,
+          role: user.user_type,
+          date: new Date(user.date_joined).toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+          }),
+          avatar: user.user_type === "driver" ? driverAvatar : userAvatar,
+        }))
+      : [
+          {
+            id: 1,
+            name: "Alex Murphy",
+            role: "passenger",
+            date: "2026-03-09",
+            avatar: userAvatar,
+          },
+          {
+            id: 2,
+            name: "Jessica Lee",
+            role: "driver",
+            date: "2026-03-09",
+            avatar: driverAvatar,
+          },
+          {
+            id: 3,
+            name: "Tom Hardy",
+            role: "passenger",
+            date: "2026-03-08",
+            avatar: generalAvatar,
+          },
+          {
+            id: 4,
+            name: "Rachel Green",
+            role: "driver",
+            date: "2026-03-08",
+            avatar: driverAvatar,
+          },
+        ];
 
   return (
     <div className="bg-[#F8FAFC] p-8 font-nunito">
