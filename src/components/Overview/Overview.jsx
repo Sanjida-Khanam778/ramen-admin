@@ -15,6 +15,7 @@ import {
   useGetPlatformAdminStatsQuery,
   useGetAdminRideAnalyticsQuery,
   useGetAdminEarningsAnalyticsQuery,
+  useGetAdminRecentRidesQuery,
 } from "../../Api/dashboardApi";
 
 // Import avatar assets
@@ -26,6 +27,7 @@ export default function Overview() {
   const { data, isLoading, error } = useGetPlatformAdminStatsQuery();
   const { data: rideAnalyticsData } = useGetAdminRideAnalyticsQuery();
   const { data: earningsAnalyticsData } = useGetAdminEarningsAnalyticsQuery();
+  const { data: recentRidesData } = useGetAdminRecentRidesQuery();
 
   const totals = data?.totals || {};
   const revenue = totals.revenue?.value ?? 0;
@@ -149,39 +151,65 @@ export default function Overview() {
     },
   ];
 
-  // Recent activity data
-  const recentActivities = [
-    {
-      id: 1,
-      name: "Sarah Johnson",
-      action: "completed a trip",
-      time: "2 minutes ago",
-    },
-    {
-      id: 2,
-      name: "Michael Chen",
-      action: "booked a ride",
-      time: "5 minutes ago",
-    },
-    {
-      id: 3,
-      name: "Emily Rodriguez",
-      action: "started a trip",
-      time: "8 minutes ago",
-    },
-    {
-      id: 4,
-      name: "James Wilson",
-      action: "cancelled a ride",
-      time: "12 minutes ago",
-    },
-    {
-      id: 5,
-      name: "David Martinez",
-      action: "completed a trip",
-      time: "15 minutes ago",
-    },
-  ];
+  // Helper function to format relative time
+  const getRelativeTime = (timestamp) => {
+    const now = new Date();
+    const then = new Date(timestamp);
+    const diffMs = now - then;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 1) return "just now";
+    if (diffMins < 60)
+      return `${diffMins} minute${diffMins > 1 ? "s" : ""} ago`;
+    if (diffHours < 24)
+      return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
+    if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
+    return then.toLocaleDateString();
+  };
+
+  // Recent activity data from API or fallback
+  const recentActivities =
+    Array.isArray(recentRidesData?.data) && recentRidesData.data.length > 0
+      ? recentRidesData.data.slice(0, 5).map((ride) => ({
+          id: ride.transaction_id,
+          name: ride.passenger?.name || "Guest Passenger",
+          action: `rode from ${ride.ride_details?.pickup_location?.split(",")[0] || "Pickup"} to ${ride.ride_details?.dropoff_location?.split(",")[0] || "Dropoff"}`,
+          time: getRelativeTime(ride.timestamps?.created_at),
+        }))
+      : [
+          {
+            id: 1,
+            name: "Sarah Johnson",
+            action: "completed a trip",
+            time: "2 minutes ago",
+          },
+          {
+            id: 2,
+            name: "Michael Chen",
+            action: "booked a ride",
+            time: "5 minutes ago",
+          },
+          {
+            id: 3,
+            name: "Emily Rodriguez",
+            action: "started a trip",
+            time: "8 minutes ago",
+          },
+          {
+            id: 4,
+            name: "James Wilson",
+            action: "cancelled a ride",
+            time: "12 minutes ago",
+          },
+          {
+            id: 5,
+            name: "David Martinez",
+            action: "completed a trip",
+            time: "15 minutes ago",
+          },
+        ];
 
   // Newly registered users data
   const newlyRegisteredUsers = [
@@ -273,7 +301,7 @@ export default function Overview() {
           {/* Recent Activity Card */}
           <div className="bg-white rounded-xl p-6 border border-gray shadow-sm">
             <h3 className="text-base font-semibold text-[#1E293B] mb-5">
-              Recent Activity
+              Recent Rides
             </h3>
             <div className="space-y-4">
               {recentActivities.map((activity) => (
