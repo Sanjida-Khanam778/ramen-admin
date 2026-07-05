@@ -358,12 +358,13 @@ export const authApi = api.injectEndpoints({
     }),
 
     updateDriverKyc: builder.mutation({
-      query: ({ driverId, kyc_status, rejection_reason }) => ({
+      query: ({ driverId, kyc_status, rejection_reason, women_safe }) => ({
         url: `/admin/drivers/${driverId}/kyc/`,
         method: "PATCH",
         body: {
           kyc_status,
           ...(rejection_reason ? { rejection_reason } : {}),
+          ...(women_safe !== undefined ? { women_safe } : {}),
         },
       }),
       invalidatesTags: (result, error, { driverId }) => [
@@ -429,5 +430,5 @@ export const {
   useGetPlatformAdminProfileQuery,
   useUpdatePlatformAdminProfileMutation,
   useGetCommisionRateQuery,
-  useUpdatePlatformUserStatusMutation
+  useUpdatePlatformUserStatusMutation,
 } = authApi;

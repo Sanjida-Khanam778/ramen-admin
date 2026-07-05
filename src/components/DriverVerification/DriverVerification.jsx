@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Check,
   Eye,
@@ -53,6 +53,7 @@ const normalizeDriver = (driver) => {
     status: kycStatus,
     isActive: driver.is_active,
     isOnline: profile.is_online,
+    womenSafe: Boolean(driver.women_safe ?? profile.women_safe ?? false),
     submittedDate: driver.date_joined
       ? new Date(driver.date_joined).toLocaleDateString("en-GB", {
           day: "2-digit",
@@ -222,8 +223,14 @@ function DetailsModal({ driver, onClose, onApprove, onReject, approving }) {
     isError,
   } = useGetAdminDriverDetailsQuery(driver.id, { skip: !driver?.id });
 
-  const displayDriver = normalizeDriver(details || driver);
+  const detailsPayload = details?.data ?? details ?? driver;
+  const displayDriver = normalizeDriver(detailsPayload);
   const st = statusConfig[displayDriver.status] || statusConfig.none;
+  const [womenSafe, setWomenSafe] = useState(Boolean(displayDriver.womenSafe));
+
+  useEffect(() => {
+    setWomenSafe(Boolean(displayDriver.womenSafe));
+  }, [displayDriver.womenSafe]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
@@ -268,7 +275,9 @@ function DetailsModal({ driver, onClose, onApprove, onReject, approving }) {
             <p className="text-xs text-gray-500 mt-0.5">
               {displayDriver.email || "-"}
             </p>
-            <p className="text-xs text-gray-500">{displayDriver.phone || "-"}</p>
+            <p className="text-xs text-gray-500">
+              {displayDriver.phone || "-"}
+            </p>
           </div>
           <span
             className={`ml-auto inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${st.className}`}
@@ -307,9 +316,34 @@ function DetailsModal({ driver, onClose, onApprove, onReject, approving }) {
           </div>
         </div>
 
+        <div className="mx-6 mb-4 rounded-xl border border-gray/50 bg-gray-50 p-4">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className=" font-semibold text-gray-500 tracking-wider">
+                Women Safe
+              </p>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={womenSafe}
+              onClick={() => setWomenSafe((prev) => !prev)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                womenSafe ? "bg-green-500" : "bg-gray"
+              }`}
+            >
+              <span
+                className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${
+                  womenSafe ? "translate-x-5" : "translate-x-1"
+                }`}
+              />
+            </button>
+          </div>
+        </div>
+
         <div className="px-6 pb-6 grid grid-cols-2 gap-3">
           <button
-            onClick={() => onApprove(displayDriver)}
+            onClick={() => onApprove(displayDriver, womenSafe)}
             disabled={approving}
             className="flex items-center justify-center gap-2 py-3 rounded-xl bg-[#1B2A5E] text-white text-sm font-semibold hover:bg-[#162347] transition-colors cursor-pointer disabled:opacity-60"
           >
@@ -349,7 +383,9 @@ export default function DriverVerification() {
     useUpdateDriverKycMutation();
 
   const drivers = useMemo(() => {
-    const raw = Array.isArray(driversResponse?.data) ? driversResponse.data : [];
+    const raw = Array.isArray(driversResponse?.data)
+      ? driversResponse.data
+      : [];
     return raw.map(normalizeDriver);
   }, [driversResponse]);
 
@@ -364,11 +400,13 @@ export default function DriverVerification() {
   const totalPages = Math.max(1, Math.ceil(totalDrivers / pageLimit));
   const startIndex = (currentPage - 1) * pageLimit;
 
-  const handleApprove = async (driver) => {
+  const handleApprove = async (driver, womenSafe) => {
+    console.log("Approving driver:", womenSafe);
     try {
       await updateDriverKyc({
         driverId: driver.id,
         kyc_status: "approved",
+        women_safe: Boolean(womenSafe),
       }).unwrap();
       toast.success(`${driver.name} approved successfully`);
       setSelectedDriver(null);
@@ -475,7 +513,8 @@ export default function DriverVerification() {
                     </tr>
                   ) : (
                     filtered.map((driver) => {
-                      const st = statusConfig[driver.status] || statusConfig.none;
+                      const st =
+                        statusConfig[driver.status] || statusConfig.none;
                       const isPending = driver.status === "pending";
 
                       return (
@@ -610,7 +649,7 @@ export default function DriverVerification() {
                         >
                           {page}
                         </button>
-                      )
+                      ),
                     )}
                     <button
                       onClick={() =>
