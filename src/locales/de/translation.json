@@ -53,11 +53,506 @@
     "roles": {
       "driver": "fahrer",
       "passenger": "passagier"
+    },
+    "errors": {
+      "unauthorized": "Nicht autorisiert — Bitte anmelden",
+      "failedLoad": "Statistiken konnten nicht geladen werden"
+    },
+    "time": {
+      "justNow": "soeben",
+      "minuteAgo": "vor {{count}} Minute",
+      "minutesAgo": "vor {{count}} Minuten",
+      "hourAgo": "vor {{count}} Stunde",
+      "hoursAgo": "vor {{count}} Stunden",
+      "dayAgo": "vor {{count}} Tag",
+      "daysAgo": "vor {{count}} Tagen"
+    },
+    "activities": {
+      "completed": "hat eine Fahrt beendet",
+      "booked": "hat eine Fahrt gebucht",
+      "started": "hat eine Fahrt begonnen",
+      "cancelled": "hat eine Fahrt storniert"
     }
   },
   "deleteModal": {
     "title": "Sind Sie sicher?",
     "message": "Möchten Sie dieses Element löschen?",
     "confirmText": "Löschen"
+  },
+  "common": {
+    "cancel": "Abbrechen",
+    "save": "Änderungen speichern",
+    "create": "Erstellen",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "close": "Schließen",
+    "loading": "Wird geladen...",
+    "error": "Fehler",
+    "processing": "Wird verarbeitet...",
+    "prev": "Zurück",
+    "next": "Weiter",
+    "active": "Aktiv",
+    "inactive": "Inaktiv",
+    "to": "An",
+    "subject": "Betreff",
+    "message": "Nachricht"
+  },
+  "charts": {
+    "tripAnalytics": "Fahrten-Analyse",
+    "earningsTrends": "Einnahmen-Trends",
+    "trips": "Fahrten"
+  },
+  "user": {
+    "title": "Benutzerverwaltung",
+    "subtitle": "Verwalten Sie Fahrer und Passagiere",
+    "searchPlaceholder": "Suche nach Name oder E-Mail...",
+    "tabs": {
+      "all": "Alle Benutzer",
+      "drivers": "Fahrer",
+      "passengers": "Passagiere"
+    },
+    "table": {
+      "user": "Benutzer",
+      "contact": "Kontakt",
+      "role": "Rolle",
+      "trips": "Fahrten",
+      "rating": "Bewertung",
+      "status": "Status",
+      "actions": "Aktionen",
+      "noUsers": "Keine Benutzer gefunden.",
+      "loading": "Benutzer werden geladen...",
+      "failed": "Fehler beim Laden der Benutzer.",
+      "showing": "Zeige {{start}}-{{end}} von {{total}} Benutzern",
+      "statuses": {
+        "active": "aktiv",
+        "suspended": "gesperrt",
+        "pending": "Ausstehende Prüfung"
+      }
+    },
+    "emailModal": {
+      "title": "E-Mail senden",
+      "to": "An:",
+      "subject": "Betreff:",
+      "message": "Nachricht:",
+      "placeholder": "Geben Sie Ihre Nachricht ein",
+      "send": "E-Mail senden",
+      "cancel": "Abbrechen",
+      "subjectDefault": "Plattform-Update - {{name}}",
+      "errorSubject": "Bitte geben Sie einen Betreff ein",
+      "errorMessage": "Bitte geben Sie eine Nachricht ein",
+      "successToast": "E-Mail an {{email}} gesendet",
+      "errorToast": "E-Mail konnte nicht gesendet werden"
+    },
+    "details": {
+      "loading": "Lade die neuesten Benutzerdetails...",
+      "failed": "Fehler beim Laden der neuesten Benutzerdetails. Zeige Zeilendaten.",
+      "title": "Benutzerprofil",
+      "subtitle": "Benutzerdetails anzeigen und verwalten",
+      "goBack": "Zurückgehen",
+      "noUser": "Kein Benutzer ausgewählt.",
+      "id": "ID: {{id}}",
+      "joined": "Beigetreten {{date}}",
+      "stats": {
+        "totalTrips": "Fahrten gesamt",
+        "completedTrips": "Abgeschlossene Fahrten",
+        "rating": "Bewertung",
+        "totalEarnings": "Gesamteinnahmen"
+      },
+      "actions": {
+        "title": "Admin-Aktionen",
+        "activate": "Benutzer aktivieren",
+        "suspend": "Benutzer sperren",
+        "sendEmail": "E-Mail senden",
+        "toastActivated": "Benutzer aktiviert.",
+        "toastSuspended": "Benutzer gesperrt.",
+        "toastFailed": "Statusaktualisierung fehlgeschlagen."
+      }
+    }
+  },
+  "driver": {
+    "title": "Fahrerprüfung",
+    "subtitle": "Prüfen und genehmigen Sie Dokumente von Fahrern",
+    "tabs": {
+      "all": "Alle",
+      "pending": "Ausstehend",
+      "approved": "Genehmigt",
+      "rejected": "Abgelehnt"
+    },
+    "table": {
+      "driver": "FAHRER",
+      "contact": "KONTAKT",
+      "carDetails": "FAHRZEUGDETAILS",
+      "submittedDate": "EINGEREICHT AM",
+      "status": "STATUS",
+      "actions": "AKTIONEN",
+      "noDrivers": "Keine Fahrer gefunden.",
+      "loading": "Fahrer werden geladen...",
+      "failed": "Fehler beim Laden der Fahrer.",
+      "showing": "Zeige {{start}}-{{end}} von {{total}} Fahrern"
+    },
+    "status": {
+      "pending": "ausstehend",
+      "approved": "genehmigt",
+      "rejected": "abgelehnt",
+      "none": "nicht eingereicht"
+    },
+    "detailsModal": {
+      "title": "Details zur Fahrerprüfung",
+      "loading": "Lade Fahrerdetails...",
+      "failed": "Laden der neuesten Fahrerdetails fehlgeschlagen. Zeige Listendaten.",
+      "carModel": "Fahrzeugmodell",
+      "carDetails": "Fahrzeugdetails",
+      "type": "Typ",
+      "year": "Jahr",
+      "color": "Farbe",
+      "plate": "Kennzeichen",
+      "womenSafe": "Women Safe",
+      "approve": "Fahrer genehmigen",
+      "reject": "Fahrer ablehnen",
+      "successApprove": "{{name}} erfolgreich genehmigt",
+      "failedApprove": "Fahrer konnte nicht genehmigt werden",
+      "photo": "Foto des Fahrers",
+      "platePhoto": "Foto des Kennzeichens",
+      "carPhoto": "Foto des Fahrzeugs",
+      "licenseFront": "Führerschein (Vorderseite)",
+      "licenseBack": "Führerschein (Rückseite)",
+      "noImage": "Kein Bild",
+      "noVehicle": "Kein Fahrzeug"
+    },
+    "reasonModal": {
+      "title": "Grund für die Ablehnung",
+      "to": "An:",
+      "subject": "Betreff:",
+      "reason": "Ablehnungsgrund:",
+      "placeholder": "Das Profil ist unvollständig.",
+      "reject": "Reject Driver",
+      "cancel": "Abbrechen",
+      "subjectDefault": "Fahrerprüfung abgelehnt",
+      "errorSubject": "Bitte geben Sie einen Betreff ein",
+      "errorReason": "Bitte geben Sie einen Ablehnungsgrund ein",
+      "successReject": "Fahrer erfolgreich abgelehnt",
+      "failedReject": "Ablehnung des Fahrers fehlgeschlagen"
+    }
+  },
+  "promo": {
+    "title": "Promo-Code-Management",
+    "subtitle": "Erstellen und verwalten Sie Aktionscodes für Ihre Mitfahr-App",
+    "createBtn": "Aktionscode erstellen",
+    "stats": {
+      "total": "Aktionscodes gesamt",
+      "active": "Aktive Codes",
+      "usage": "Nutzung gesamt",
+      "avgRate": "Mittlere Nutzungsrate"
+    },
+    "tabs": {
+      "all": "Alle",
+      "active": "Aktiv",
+      "expired": "Abgelaufen",
+      "disabled": "Deaktiviert"
+    },
+    "table": {
+      "code": "Code",
+      "description": "Beschreibung",
+      "discount": "Rabatt",
+      "usage": "Nutzung",
+      "validPeriod": "Gültigkeitszeitraum",
+      "status": "Status",
+      "actions": "Aktionen",
+      "noPromo": "Keine Aktionscodes gefunden.",
+      "loading": "Gutscheine werden geladen...",
+      "failed": "Fehler beim Laden der Gutscheine.",
+      "showing": "Zeige {{count}} von {{total}} Gutscheinen · Seite {{page}}",
+      "copiedToast": "Code \"{{code}}\" kopiert!"
+    },
+    "badge": {
+      "active": "aktiv",
+      "expired": "abgelaufen",
+      "disabled": "deaktiviert"
+    },
+    "formModal": {
+      "titleCreate": "Neuen Aktionscode erstellen",
+      "titleEdit": "Gutschein bearbeiten",
+      "code": "Aktionscode",
+      "codePlaceholder": "z.B. SAVE20",
+      "title": "Titel",
+      "titlePlaceholder": "z.B. Sommer-Sale",
+      "description": "Beschreibung",
+      "descriptionPlaceholder": "z.B. Erhalten Sie 20% Rabatt auf Ihre nächste Fahrt",
+      "discountType": "Rabattart",
+      "percentage": "Prozentsatz (%)",
+      "fixed": "Festbetrag ($)",
+      "discountValue": "Rabattwert",
+      "maxDiscount": "Maximaler Rabatt ($)",
+      "minOrder": "Mindestbestellwert ($)",
+      "usageLimit": "Nutzungslimit",
+      "usageLimitPlaceholder": "Unbegrenzt",
+      "maxUsesPerUser": "Max. Nutzungen / Nutzer",
+      "validFrom": "Gültig ab",
+      "validUntil": "Gültig bis",
+      "save": "Änderungen speichern",
+      "create": "Aktionscode erstellen",
+      "cancel": "Abbrechen",
+      "errorRequired": "Erforderlich",
+      "toastCreateSuccess": "Aktionscode erfolgreich erstellt!",
+      "toastCreateFailed": "Gutschein konnte nicht erstellt werden.",
+      "toastUpdateSuccess": "Gutschein erfolgreich aktualisiert!",
+      "toastUpdateFailed": "Gutschein konnte nicht aktualisiert werden."
+    },
+    "detailModal": {
+      "title": "Details zum Aktionscode",
+      "loading": "Details werden geladen...",
+      "codeLabel": "Aktionscode",
+      "copied": "Kopiert!",
+      "copyCode": "Code kopieren",
+      "description": "Beschreibung",
+      "status": "Status",
+      "discount": "Rabatt",
+      "maxDiscount": "Maximaler Rabatt",
+      "minOrder": "Mindestbestellwert",
+      "maxUsesPerUser": "Max. Nutzungen / Nutzer",
+      "usage": "Nutzung",
+      "usageRate": "Nutzungsrate",
+      "validFrom": "Gültig ab",
+      "validUntil": "Gültig bis",
+      "couponId": "Gutschein-ID",
+      "edit": "Bearbeiten",
+      "disable": "Deaktivieren",
+      "noMinimum": "Kein Minimum",
+      "percentageOff": "{{value}}% Rabatt",
+      "fixedOff": "${{value}} Rabatt",
+      "usedLabel": "{{used}} / {{limit}} genutzt",
+      "toastDisableSuccess": "Gutschein erfolgreich deaktiviert.",
+      "toastDisableFailed": "Gutschein konnte nicht deaktiviert werden.",
+      "toastDeleteSuccess": "Gutschein gelöscht.",
+      "toastDeleteFailed": "Gutschein konnte nicht gelöscht werden."
+    }
+  },
+  "payment": {
+    "title": "Auszahlungsverwaltung",
+    "subtitle": "Auszahlungsanfragen von Fahrern prüfen und bestätigen",
+    "stats": {
+      "total": "Auszahlungen gesamt",
+      "pending": "Ausstehende Anfragen",
+      "processed": "Verarbeitet",
+      "failed": "Fehlgeschlagen"
+    },
+    "tabs": {
+      "all": "Alle",
+      "pending": "Ausstehend",
+      "paid": "Bezahlt",
+      "cancelled": "Storniert"
+    },
+    "table": {
+      "id": "Auszahlungs-ID",
+      "driver": "Fahrer",
+      "amount": "Betrag",
+      "method": "Auszahlungsmethode",
+      "date": "Anforderungsdatum",
+      "status": "Status",
+      "actions": "Aktionen",
+      "noPayments": "Keine Auszahlungen gefunden.",
+      "loading": "Auszahlungen werden geladen...",
+      "failed": "Fehler beim Laden der Auszahlungen.",
+      "showing": "Zeige {{count}} von {{total}} Anfragen"
+    },
+    "detailModal": {
+      "title": "Details zur Auszahlung",
+      "id": "Auszahlungs-ID",
+      "date": "Datum",
+      "status": "Status",
+      "driver": "Fahrer",
+      "amount": "Gesamtbetrag",
+      "method": "Auszahlungsmethode",
+      "description": "Beschreibung",
+      "rejectReasonPlaceholder": "Ablehnungsgrund (optional)",
+      "confirmPay": "Zahlung bestätigen",
+      "rejectPay": "Zahlung ablehnen",
+      "confirmReject": "Ablehnung bestätigen",
+      "processing": "Wird verarbeitet...",
+      "toastApproveSuccess": "Zahlung erfolgreich genehmigt.",
+      "toastApproveFailed": "Zahlung konnte nicht genehmigt werden.",
+      "toastCancelSuccess": "Zahlung abgelehnt.",
+      "toastCancelFailed": "Zahlung konnte nicht abgelehnt werden."
+    }
+  },
+  "notif": {
+    "title": "Benachrichtigungen",
+    "subtitle": "Bleiben Sie über alle Plattform-Aktivitäten auf dem Laufenden",
+    "searchPlaceholder": "Benachrichtigungen suchen...",
+    "noNotifs": "Keine Benachrichtigungen",
+    "loading": "Benachrichtigungen werden geladen...",
+    "failed": "Fehler beim Laden der Benachrichtigungen",
+    "toastDeleted": "Benachrichtigung gelöscht",
+    "toastDeleteFailed": "Fehler beim Löschen der Benachrichtigung"
+  },
+  "complaint": {
+    "title": "Beschwerden",
+    "subtitle": "Beschwerden von Fahrern und Passagieren bearbeiten",
+    "tabs": {
+      "all": "Alle",
+      "open": "Offen",
+      "inReview": "In Prüfung",
+      "resolved": "Gelöst"
+    },
+    "table": {
+      "user": "Benutzer",
+      "subject": "Betreff",
+      "message": "Nachricht",
+      "date": "Datum",
+      "status": "Status",
+      "actions": "Aktionen",
+      "noComplaints": "Keine Beschwerden gefunden.",
+      "loading": "Beschwerden werden geladen...",
+      "failed": "Fehler beim Laden der Beschwerden."
+    },
+    "status": {
+      "open": "offen",
+      "inProgress": "in Bearbeitung",
+      "inReview": "in Prüfung",
+      "resolved": "gelöst",
+      "closed": "geschlossen"
+    },
+    "detail": {
+      "backBtn": "Zurück zu den Beschwerden",
+      "loading": "Beschwerde wird geladen...",
+      "failed": "Diese Beschwerde konnte nicht gefunden werden - sie wurde möglicherweise gelöscht.",
+      "ticketLabel": "Ticket",
+      "submitted": "Eingereicht am {{date}}",
+      "messageTitle": "Beschwerdetext",
+      "responseTitleResolved": "Lösungshinweise",
+      "responseTitleAdmin": "Antwort des Admins",
+      "responsePlaceholder": "Geben Sie Ihre Antwort auf die Beschwerde ein...",
+      "errorEmptyResponse": "Schreiben Sie eine Antwort, bevor Sie senden.",
+      "errorSubmit": "Ticket konnte nicht aktualisiert werden. Versuchen Sie es erneut.",
+      "sendReply": "Antwort senden",
+      "resolvedLabel": "Dieses Ticket ist geschlossen. Lösungshinweise sind oben dargestellt.",
+      "toastResolved": "Ticket als gelöst markiert.",
+      "toastReply": "Antwort gesendet.",
+      "sidebarTitle": "Eingereicht von",
+      "unnamed": "Unbenannter Benutzer",
+      "phone": "Telefon",
+      "totalTickets": "Tickets gesamt"
+    }
+  },
+  "commission": {
+    "title": "Gebühren & Provision",
+    "subtitle": "Plattformgebühren, Servicekosten und Fahrereinnahmen verwalten",
+    "settingsCard": {
+      "title": "Plattform-Einstellungen",
+      "editBtn": "Preise bearbeiten",
+      "cancelBtn": "Abbrechen",
+      "saveBtn": "Preise speichern",
+      "errorKm": "Der KM-Tarif muss eine positive Zahl sein.",
+      "errorSvc": "Die Servicegebühr muss zwischen 1 und 100 liegen.",
+      "errorBase": "Der Grundpreis muss eine positive Zahl sein.",
+      "failedSave": "Fehler beim Speichern. Bitte versuchen Sie es erneut.",
+      "perKm": "KM-Fahrertarif",
+      "serviceCharge": "Platform-Servicegebühr",
+      "baseFare": "Grundpreis"
+    },
+    "stats": {
+      "totalRides": "Fahrten gesamt",
+      "totalRevenue": "Umsatz gesamt",
+      "platformEarnings": "Plattform-Einnahmen",
+      "driverEarnings": "Fahrer-Einnahmen",
+      "averageFare": "Mittlerer Fahrpreis",
+      "successRate": "Erfolgsquote"
+    },
+    "table": {
+      "title": "Letzte Transaktionen",
+      "all": "Alle Transaktionen",
+      "pending": "Ausstehend",
+      "paid": "Bezahlt",
+      "failed": "Fehlgeschlagen",
+      "noTx": "Keine Transaktionen gefunden.",
+      "loading": "Transaktionen werden geladen...",
+      "failedLoad": "Fehler beim Laden der Transaktionen.",
+      "showing": "Zeige {{count}} von {{total}} Transaktionen",
+      "cols": {
+        "txId": "Transaktions-ID",
+        "date": "Datum",
+        "amount": "Gesamtbetrag",
+        "commission": "Provision",
+        "driverEarnings": "Fahrernetto",
+        "status": "Status",
+        "actions": "Aktionen"
+      }
+    },
+    "detailModal": {
+      "title": "Transaktionsdetails",
+      "loading": "Lade Transaktionsdetails...",
+      "noDetails": "Keine Details verfügbar.",
+      "txId": "Transaktions-ID",
+      "rideId": "Fahrten-ID",
+      "driver": "Fahrer",
+      "passenger": "Passagier",
+      "method": "Zahlungsmethode",
+      "status": "Status",
+      "mode": "Fahrtmodus",
+      "rideStatus": "Fahrtstatus",
+      "breakdown": "Zahlungsaufschlüsselung",
+      "total": "Gesamtbetrag",
+      "fee": "Plattformgebühr",
+      "earnings": "Fahrereinnahmen",
+      "initiated": "Zahlung initiiert",
+      "confirmed": "Zahlung bestätigt"
+    }
+  },
+  "pricing": {
+    "title": "Preisverwaltung",
+    "subtitle": "Definieren Sie Grund- und Entfernungsgebühren-Vorlagen nach Fahrzeugkategorie und Modus",
+    "createBtn": "Preisregel hinzufügen",
+    "table": {
+      "carType": "Fahrzeugtyp",
+      "rideMode": "Fahrtmodus",
+      "baseFare": "Grundpreis",
+      "perKmRate": "Tarif pro KM",
+      "status": "Status",
+      "actions": "Aktionen",
+      "noRules": "Keine Preisregeln gefunden.",
+      "loading": "Regeln werden geladen...",
+      "failed": "Fehler beim Laden der Preisregeln.",
+      "showing": "Zeige {{count}} von {{total}} Preisregeln",
+      "confirmDelete": "Sind Sie sicher, dass Sie diese Regel löschen möchten?"
+    },
+    "formModal": {
+      "titleCreate": "Neue Preisregel hinzufügen",
+      "titleEdit": "Preisregel bearbeiten",
+      "carType": "Fahrzeugtyp",
+      "rideMode": "Fahrtmodus",
+      "baseFare": "Grundpreis ($)",
+      "perKmRate": "Tarif pro KM ($)",
+      "status": "Regelstatus (Aktiv)",
+      "errorCar": "Fahrzeugtyp ist erforderlich.",
+      "errorMode": "Fahrtmodus ist erforderlich.",
+      "errorBase": "Der Grundpreis muss eine positive Zahl sein.",
+      "errorRate": "Der Tarif pro KM muss eine positive Zahl sein.",
+      "toastCreateSuccess": "Regel erfolgreich erstellt!",
+      "toastCreateFailed": "Fehler beim Erstellen der Regel.",
+      "toastUpdateSuccess": "Regel erfolgreich aktualisiert!",
+      "toastUpdateFailed": "Fehler beim Aktualisieren der Regel.",
+      "toastDeleteSuccess": "Regel gelöscht.",
+      "toastDeleteFailed": "Fehler beim Löschen der Regel.",
+      "carTypes": {
+        "economy": "Economy",
+        "comfort": "Comfort",
+        "premium": "Premium",
+        "sub": "Sub-Compact",
+        "moto": "Motorrad"
+      },
+      "rideModes": {
+        "solo": "Einzelfahrt",
+        "shared": "Sammeltaxi",
+        "shuttle": "Shuttle-Transfer",
+        "women_safe": "Women Safe",
+        "airport": "Flughafen-Route"
+      }
+    },
+    "confirmModal": {
+      "title": "Preisregel verwerfen",
+      "message": "Sind Sie sicher, dass Sie diese Preisregel dauerhaft löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "deleteBtn": "Regel löschen",
+      "cancelBtn": "Abbrechen"
+    }
   }
 }

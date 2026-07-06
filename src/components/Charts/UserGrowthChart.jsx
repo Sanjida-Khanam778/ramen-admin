@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 const defaultData = [
   { month: "Jan", value: 3100 },
@@ -10,6 +11,7 @@ const defaultData = [
 ];
 
 export default function UserGrowthChart({ data: propData }) {
+  const { t } = useTranslation();
   const [hoveredIdx, setHoveredIdx] = useState(null);
 
   // Normalize incoming data
@@ -131,7 +133,7 @@ export default function UserGrowthChart({ data: propData }) {
     <div className="bg-white rounded-xl p-6 border border-gray shadow-sm relative">
       <div className="mb-6">
         <h3 className="text-base font-semibold text-[#1E293B]">
-          Trip Analytics
+          {t("charts.tripAnalytics")}
         </h3>
       </div>
 
@@ -255,7 +257,7 @@ export default function UserGrowthChart({ data: propData }) {
                 top: `${(points[hoveredIdx].y / height) * 100 - 8}%`,
               }}
             >
-              {points[hoveredIdx].value.toLocaleString()} Trips
+              {points[hoveredIdx].value.toLocaleString()} {t("charts.trips")}
             </div>
           )}
 

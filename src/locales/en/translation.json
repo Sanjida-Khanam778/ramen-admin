@@ -53,11 +53,506 @@
     "roles": {
       "driver": "driver",
       "passenger": "passenger"
+    },
+    "errors": {
+      "unauthorized": "Unauthorized — please sign in",
+      "failedLoad": "Failed to load stats"
+    },
+    "time": {
+      "justNow": "just now",
+      "minuteAgo": "{{count}} minute ago",
+      "minutesAgo": "{{count}} minutes ago",
+      "hourAgo": "{{count}} hour ago",
+      "hoursAgo": "{{count}} hours ago",
+      "dayAgo": "{{count}} day ago",
+      "daysAgo": "{{count}} days ago"
+    },
+    "activities": {
+      "completed": "completed a trip",
+      "booked": "booked a ride",
+      "started": "started a trip",
+      "cancelled": "cancelled a ride"
     }
   },
   "deleteModal": {
     "title": "Are you sure?",
     "message": "Do you want to delete this item?",
     "confirmText": "Delete"
+  },
+  "common": {
+    "cancel": "Cancel",
+    "save": "Save Changes",
+    "create": "Create",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "loading": "Loading...",
+    "error": "Error",
+    "processing": "Processing...",
+    "prev": "Prev",
+    "next": "Next",
+    "active": "Active",
+    "inactive": "Inactive",
+    "to": "To",
+    "subject": "Subject",
+    "message": "Message"
+  },
+  "charts": {
+    "tripAnalytics": "Trip Analytics",
+    "earningsTrends": "Earnings Trends",
+    "trips": "Trips"
+  },
+  "user": {
+    "title": "User Management",
+    "subtitle": "Manage drivers and passengers",
+    "searchPlaceholder": "Search by name or email...",
+    "tabs": {
+      "all": "All Users",
+      "drivers": "Drivers",
+      "passengers": "Passengers"
+    },
+    "table": {
+      "user": "User",
+      "contact": "Contact",
+      "role": "Role",
+      "trips": "Trips",
+      "rating": "Rating",
+      "status": "Status",
+      "actions": "Actions",
+      "noUsers": "No users found.",
+      "loading": "Loading users...",
+      "failed": "Failed to load users.",
+      "showing": "Showing {{start}}-{{end}} of {{total}} users",
+      "statuses": {
+        "active": "active",
+        "suspended": "suspended",
+        "pending": "pending verification"
+      }
+    },
+    "emailModal": {
+      "title": "Send Email",
+      "to": "To:",
+      "subject": "Subject:",
+      "message": "Message:",
+      "placeholder": "Enter your message",
+      "send": "Send Email",
+      "cancel": "Cancel",
+      "subjectDefault": "Platform update - {{name}}",
+      "errorSubject": "Please enter a subject",
+      "errorMessage": "Please enter a message",
+      "successToast": "Email sent to {{email}}",
+      "errorToast": "Failed to send email"
+    },
+    "details": {
+      "loading": "Loading latest user details...",
+      "failed": "Failed to load latest user details. Showing selected row data.",
+      "title": "User Profile",
+      "subtitle": "View and manage user details",
+      "goBack": "Go Back",
+      "noUser": "No user selected.",
+      "id": "ID: {{id}}",
+      "joined": "Joined {{date}}",
+      "stats": {
+        "totalTrips": "Total Trips",
+        "completedTrips": "Completed Trips",
+        "rating": "Rating",
+        "totalEarnings": "Total Earnings"
+      },
+      "actions": {
+        "title": "Admin Actions",
+        "activate": "Activate User",
+        "suspend": "Suspend User",
+        "sendEmail": "Send Email",
+        "toastActivated": "User activated.",
+        "toastSuspended": "User suspended.",
+        "toastFailed": "Failed to update user status."
+      }
+    }
+  },
+  "driver": {
+    "title": "Driver Verification",
+    "subtitle": "Review and approve driver documents",
+    "tabs": {
+      "all": "All",
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected"
+    },
+    "table": {
+      "driver": "DRIVER",
+      "contact": "CONTACT",
+      "carDetails": "CAR DETAILS",
+      "submittedDate": "SUBMITTED DATE",
+      "status": "STATUS",
+      "actions": "ACTIONS",
+      "noDrivers": "No drivers found.",
+      "loading": "Loading drivers...",
+      "failed": "Failed to load drivers.",
+      "showing": "Showing {{start}}-{{end}} of {{total}} drivers"
+    },
+    "status": {
+      "pending": "pending",
+      "approved": "approved",
+      "rejected": "rejected",
+      "none": "not submitted"
+    },
+    "detailsModal": {
+      "title": "Driver Verification Details",
+      "loading": "Loading driver details...",
+      "failed": "Failed to load latest driver details. Showing list data.",
+      "carModel": "Car Model",
+      "carDetails": "Car Details",
+      "type": "Type",
+      "year": "Year",
+      "color": "Color",
+      "plate": "Plate",
+      "womenSafe": "Women Safe",
+      "approve": "Approve Driver",
+      "reject": "Reject Driver",
+      "successApprove": "{{name}} approved successfully",
+      "failedApprove": "Failed to approve driver",
+      "photo": "Driver Photo",
+      "platePhoto": "Plate Photo",
+      "carPhoto": "Car Photo",
+      "licenseFront": "License Front",
+      "licenseBack": "License Back",
+      "noImage": "No image",
+      "noVehicle": "No vehicle"
+    },
+    "reasonModal": {
+      "title": "Reason for rejection",
+      "to": "To:",
+      "subject": "Subject:",
+      "reason": "Rejection reason:",
+      "placeholder": "The profile is not complete.",
+      "reject": "Reject Driver",
+      "cancel": "Cancel",
+      "subjectDefault": "Driver verification rejected",
+      "errorSubject": "Please enter a subject",
+      "errorReason": "Please enter a rejection reason",
+      "successReject": "Driver rejected successfully",
+      "failedReject": "Failed to reject driver"
+    }
+  },
+  "promo": {
+    "title": "Promo Code Management",
+    "subtitle": "Create and manage promotional codes for your ride-share app",
+    "createBtn": "Create Promo Code",
+    "stats": {
+      "total": "Total Promo Codes",
+      "active": "Active Codes",
+      "usage": "Total Usage",
+      "avgRate": "Avg Usage Rate"
+    },
+    "tabs": {
+      "all": "All",
+      "active": "Active",
+      "expired": "Expired",
+      "disabled": "Disabled"
+    },
+    "table": {
+      "code": "Code",
+      "description": "Description",
+      "discount": "Discount",
+      "usage": "Usage",
+      "validPeriod": "Valid Period",
+      "status": "Status",
+      "actions": "Actions",
+      "noPromo": "No promo codes found.",
+      "loading": "Loading coupons...",
+      "failed": "Failed to load coupons.",
+      "showing": "Showing {{count}} of {{total}} coupons · Page {{page}}",
+      "copiedToast": "Code \"{{code}}\" copied!"
+    },
+    "badge": {
+      "active": "active",
+      "expired": "expired",
+      "disabled": "disabled"
+    },
+    "formModal": {
+      "titleCreate": "Create New Promo Code",
+      "titleEdit": "Edit Coupon",
+      "code": "Promo Code",
+      "codePlaceholder": "e.g., SAVE20",
+      "title": "Title",
+      "titlePlaceholder": "e.g., Summer Sale",
+      "description": "Description",
+      "descriptionPlaceholder": "e.g., Get 20% off your next ride",
+      "discountType": "Discount Type",
+      "percentage": "Percentage (%)",
+      "fixed": "Fixed ($)",
+      "discountValue": "Discount Value",
+      "maxDiscount": "Max Discount ($)",
+      "minOrder": "Min Order ($)",
+      "usageLimit": "Usage Limit",
+      "usageLimitPlaceholder": "Unlimited",
+      "maxUsesPerUser": "Max Uses / User",
+      "validFrom": "Valid From",
+      "validUntil": "Valid Until",
+      "save": "Save Changes",
+      "create": "Create Promo Code",
+      "cancel": "Cancel",
+      "errorRequired": "Required",
+      "toastCreateSuccess": "Promo code created successfully!",
+      "toastCreateFailed": "Failed to create coupon.",
+      "toastUpdateSuccess": "Coupon updated successfully!",
+      "toastUpdateFailed": "Failed to update coupon."
+    },
+    "detailModal": {
+      "title": "Promo Code Details",
+      "loading": "Loading details…",
+      "codeLabel": "Promo Code",
+      "copied": "Copied!",
+      "copyCode": "Copy Code",
+      "description": "Description",
+      "status": "Status",
+      "discount": "Discount",
+      "maxDiscount": "Max Discount",
+      "minOrder": "Min Order",
+      "maxUsesPerUser": "Max Uses / User",
+      "usage": "Usage",
+      "usageRate": "Usage Rate",
+      "validFrom": "Valid From",
+      "validUntil": "Valid Until",
+      "couponId": "Coupon ID",
+      "edit": "Edit",
+      "disable": "Disable",
+      "noMinimum": "No minimum",
+      "percentageOff": "{{value}}% off",
+      "fixedOff": "${{value}} off",
+      "usedLabel": "{{used}} / {{limit}} used",
+      "toastDisableSuccess": "Coupon disabled successfully.",
+      "toastDisableFailed": "Failed to disable coupon.",
+      "toastDeleteSuccess": "Coupon deleted.",
+      "toastDeleteFailed": "Failed to delete coupon."
+    }
+  },
+  "payment": {
+    "title": "Withdraw Management",
+    "subtitle": "Review and confirm driver payout requests",
+    "stats": {
+      "total": "Total Withdrawals",
+      "pending": "Pending Requests",
+      "processed": "Processed",
+      "failed": "Failed"
+    },
+    "tabs": {
+      "all": "All",
+      "pending": "Pending",
+      "paid": "Paid",
+      "cancelled": "Cancelled"
+    },
+    "table": {
+      "id": "Withdrawal ID",
+      "driver": "Driver",
+      "amount": "Amount",
+      "method": "Payout Method",
+      "date": "Requested Date",
+      "status": "Status",
+      "actions": "Actions",
+      "noPayments": "No withdrawals found.",
+      "loading": "Loading withdrawals...",
+      "failed": "Failed to load withdrawals.",
+      "showing": "Showing {{count}} of {{total}} requests"
+    },
+    "detailModal": {
+      "title": "Withdrawal Details",
+      "id": "Withdrawal ID",
+      "date": "Date",
+      "status": "Status",
+      "driver": "Driver",
+      "amount": "Total Amount",
+      "method": "Payout Method",
+      "description": "Description",
+      "rejectReasonPlaceholder": "Rejection reason (optional)",
+      "confirmPay": "Confirm Payment",
+      "rejectPay": "Reject Payment",
+      "confirmReject": "Confirm Reject",
+      "processing": "Processing…",
+      "toastApproveSuccess": "Payment approved successfully.",
+      "toastApproveFailed": "Failed to approve payment.",
+      "toastCancelSuccess": "Payment rejected.",
+      "toastCancelFailed": "Failed to reject payment."
+    }
+  },
+  "notif": {
+    "title": "Notifications",
+    "subtitle": "Stay updated with all platform activities",
+    "searchPlaceholder": "Search notifications...",
+    "noNotifs": "No notifications",
+    "loading": "Loading notifications...",
+    "failed": "Failed to load notifications",
+    "toastDeleted": "Notification deleted",
+    "toastDeleteFailed": "Failed to delete notification"
+  },
+  "complaint": {
+    "title": "Complaint Management",
+    "subtitle": "Handle driver and passenger complaints",
+    "tabs": {
+      "all": "All",
+      "open": "Open",
+      "inReview": "In Review",
+      "resolved": "Resolved"
+    },
+    "table": {
+      "user": "User",
+      "subject": "Subject",
+      "message": "Message",
+      "date": "Date",
+      "status": "Status",
+      "actions": "Actions",
+      "noComplaints": "No complaints found.",
+      "loading": "Loading complaints…",
+      "failed": "Failed to load complaints."
+    },
+    "status": {
+      "open": "open",
+      "inProgress": "in progress",
+      "inReview": "in review",
+      "resolved": "resolved",
+      "closed": "closed"
+    },
+    "detail": {
+      "backBtn": "Back to complaints",
+      "loading": "Loading complaint…",
+      "failed": "This complaint couldn't be found — it may have been removed.",
+      "ticketLabel": "Ticket",
+      "submitted": "Submitted {{date}}",
+      "messageTitle": "Complaint Message",
+      "responseTitleResolved": "Resolution Notes",
+      "responseTitleAdmin": "Admin Response",
+      "responsePlaceholder": "Type your response to the complaint...",
+      "errorEmptyResponse": "Write a response before sending.",
+      "errorSubmit": "Could not update this ticket. Try again.",
+      "sendReply": "Send Reply",
+      "resolvedLabel": "This ticket is closed. Resolution notes are shown above.",
+      "toastResolved": "Ticket marked as resolved.",
+      "toastReply": "Reply sent.",
+      "sidebarTitle": "Submitted By",
+      "unnamed": "Unnamed user",
+      "phone": "Phone",
+      "totalTickets": "Total tickets"
+    }
+  },
+  "commission": {
+    "title": "Rate & Commission Management",
+    "subtitle": "Manage platform rates, service charges, and driver earnings",
+    "settingsCard": {
+      "title": "Platform Settings",
+      "editBtn": "Edit Rates",
+      "cancelBtn": "Cancel",
+      "saveBtn": "Save Rates",
+      "errorKm": "Per KM rate must be a positive number.",
+      "errorSvc": "Service charge must be between 1 and 100.",
+      "errorBase": "Base fare must be a positive number.",
+      "failedSave": "Failed to save settings. Please try again.",
+      "perKm": "Per KM Driver Rate",
+      "serviceCharge": "Platform Service Charge",
+      "baseFare": "Base Fare"
+    },
+    "stats": {
+      "totalRides": "Total Rides",
+      "totalRevenue": "Total Revenue",
+      "platformEarnings": "Platform Earnings",
+      "driverEarnings": "Driver Earnings",
+      "averageFare": "Average Fare",
+      "successRate": "Success Rate"
+    },
+    "table": {
+      "title": "Recent Transactions",
+      "all": "All Transactions",
+      "pending": "Pending",
+      "paid": "Paid",
+      "failed": "Failed",
+      "noTx": "No transactions found.",
+      "loading": "Loading transactions...",
+      "failedLoad": "Failed to load transactions.",
+      "showing": "Showing {{count}} of {{total}} transactions",
+      "cols": {
+        "txId": "Transaction ID",
+        "date": "Date",
+        "amount": "Total Amount",
+        "commission": "Commission",
+        "driverEarnings": "Driver Net",
+        "status": "Status",
+        "actions": "Actions"
+      }
+    },
+    "detailModal": {
+      "title": "Transaction Details",
+      "loading": "Loading transaction details…",
+      "noDetails": "No details available.",
+      "txId": "Transaction ID",
+      "rideId": "Ride ID",
+      "driver": "Driver",
+      "passenger": "Passenger",
+      "method": "Payment Method",
+      "status": "Status",
+      "mode": "Ride Mode",
+      "rideStatus": "Ride Status",
+      "breakdown": "Payment Breakdown",
+      "total": "Total Amount",
+      "fee": "Platform Fee",
+      "earnings": "Driver Earnings",
+      "initiated": "Payment Initiated",
+      "confirmed": "Payment Confirmed"
+    }
+  },
+  "pricing": {
+    "title": "Pricing Management",
+    "subtitle": "Define base and distance fare templates by vehicle category and mode",
+    "createBtn": "Add Pricing Rule",
+    "table": {
+      "carType": "Car Type",
+      "rideMode": "Ride Mode",
+      "baseFare": "Base Fare",
+      "perKmRate": "Per KM Rate",
+      "status": "Status",
+      "actions": "Actions",
+      "noRules": "No pricing rules found.",
+      "loading": "Loading rules...",
+      "failed": "Failed to load pricing rules.",
+      "showing": "Showing {{count}} of {{total}} pricing rules",
+      "confirmDelete": "Are you sure you want to delete this rule?"
+    },
+    "formModal": {
+      "titleCreate": "Add New Pricing Rule",
+      "titleEdit": "Edit Pricing Rule",
+      "carType": "Car Type",
+      "rideMode": "Ride Mode",
+      "baseFare": "Base Fare ($)",
+      "perKmRate": "Per KM Rate ($)",
+      "status": "Rule Status (Active)",
+      "errorCar": "Car type is required.",
+      "errorMode": "Ride mode is required.",
+      "errorBase": "Base fare must be a positive number.",
+      "errorRate": "Per KM rate must be a positive number.",
+      "toastCreateSuccess": "Rule created successfully!",
+      "toastCreateFailed": "Failed to create rule.",
+      "toastUpdateSuccess": "Rule updated successfully!",
+      "toastUpdateFailed": "Failed to update rule.",
+      "toastDeleteSuccess": "Rule deleted.",
+      "toastDeleteFailed": "Failed to delete rule.",
+      "carTypes": {
+        "economy": "Economy",
+        "comfort": "Comfort",
+        "premium": "Premium",
+        "sub": "Sub-Compact",
+        "moto": "Motorcycle"
+      },
+      "rideModes": {
+        "solo": "Solo Ride",
+        "shared": "Shared Pool",
+        "shuttle": "Shuttle Transit",
+        "women_safe": "Women Safe",
+        "airport": "Airport Route"
+      }
+    },
+    "confirmModal": {
+      "title": "Delete Pricing Rule",
+      "message": "Are you sure you want to permanently delete this pricing rule? This action cannot be undone.",
+      "deleteBtn": "Delete Rule",
+      "cancelBtn": "Cancel"
+    }
   }
 }

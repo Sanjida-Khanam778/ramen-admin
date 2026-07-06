@@ -67,7 +67,7 @@ export default function Overview() {
 
   const status = error?.status ?? error?.originalStatus ?? null;
   const errorMessage =
-    status === 401 ? "Unauthorized — please sign in" : "Failed to load stats";
+    status === 401 ? t("overview.errors.unauthorized") : t("overview.errors.failedLoad");
 
   // Card metrics parsing with mock fallbacks matching the mockup
   const metrics = [
@@ -164,12 +164,13 @@ export default function Overview() {
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 1) return "just now";
+    if (diffMins < 1) return t("overview.time.justNow");
     if (diffMins < 60)
-      return `${diffMins} minute${diffMins > 1 ? "s" : ""} ago`;
+      return diffMins === 1 ? t("overview.time.minuteAgo", { count: 1 }) : t("overview.time.minutesAgo", { count: diffMins });
     if (diffHours < 24)
-      return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`;
-    if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`;
+      return diffHours === 1 ? t("overview.time.hourAgo", { count: 1 }) : t("overview.time.hoursAgo", { count: diffHours });
+    if (diffDays < 7)
+      return diffDays === 1 ? t("overview.time.dayAgo", { count: 1 }) : t("overview.time.daysAgo", { count: diffDays });
     return then.toLocaleDateString();
   };
 
@@ -191,32 +192,32 @@ export default function Overview() {
           {
             id: 1,
             name: "Sarah Johnson",
-            action: "completed a trip",
-            time: "2 minutes ago",
+            action: t("overview.activities.completed"),
+            time: t("overview.time.minutesAgo", { count: 2 }),
           },
           {
             id: 2,
             name: "Michael Chen",
-            action: "booked a ride",
-            time: "5 minutes ago",
+            action: t("overview.activities.booked"),
+            time: t("overview.time.minutesAgo", { count: 5 }),
           },
           {
             id: 3,
             name: "Emily Rodriguez",
-            action: "started a trip",
-            time: "8 minutes ago",
+            action: t("overview.activities.started"),
+            time: t("overview.time.minutesAgo", { count: 8 }),
           },
           {
             id: 4,
             name: "James Wilson",
-            action: "cancelled a ride",
-            time: "12 minutes ago",
+            action: t("overview.activities.cancelled"),
+            time: t("overview.time.minutesAgo", { count: 12 }),
           },
           {
             id: 5,
             name: "David Martinez",
-            action: "completed a trip",
-            time: "15 minutes ago",
+            action: t("overview.activities.completed"),
+            time: t("overview.time.minutesAgo", { count: 15 }),
           },
         ];
 
@@ -238,28 +239,28 @@ export default function Overview() {
           {
             id: 1,
             name: "Alex Murphy",
-            role: "passenger",
+            role: t("overview.roles.passenger"),
             date: "2026-03-09",
             avatar: userAvatar,
           },
           {
             id: 2,
             name: "Jessica Lee",
-            role: "driver",
+            role: t("overview.roles.driver"),
             date: "2026-03-09",
             avatar: driverAvatar,
           },
           {
             id: 3,
             name: "Tom Hardy",
-            role: "passenger",
+            role: t("overview.roles.passenger"),
             date: "2026-03-08",
             avatar: generalAvatar,
           },
           {
             id: 4,
             name: "Rachel Green",
-            role: "driver",
+            role: t("overview.roles.driver"),
             date: "2026-03-08",
             avatar: driverAvatar,
           },
@@ -280,7 +281,7 @@ export default function Overview() {
           <h1 className="text-2xl font-semibold text-[#1E293B]">
             {t("overview.title")}
           </h1>
-          <p className="text-sm text-[#6A7282] mt-1">{t("overviewSubtitle")}</p>
+          <p className="text-sm text-[#6A7282] mt-1">{t("overview.subtitle")}</p>
         </div>
 
         {/* 9 Stat Cards Grid */}

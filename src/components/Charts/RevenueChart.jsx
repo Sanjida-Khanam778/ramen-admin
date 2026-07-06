@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 const defaultData = [
   { month: "Jan", total: 90000 },
@@ -10,6 +11,7 @@ const defaultData = [
 ];
 
 export default function RevenueChart({ data: propData }) {
+  const { t } = useTranslation();
   const [hoveredIdx, setHoveredIdx] = useState(null);
 
   // Normalize incoming data
@@ -128,7 +130,7 @@ export default function RevenueChart({ data: propData }) {
     <div className="bg-white rounded-xl p-6 border border-gray shadow-sm relative">
       <div className="mb-6">
         <h3 className="text-base font-semibold text-[#1E293B]">
-          Earnings Trends
+          {t("charts.earningsTrends")}
         </h3>
       </div>
 

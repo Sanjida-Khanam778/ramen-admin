@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Check,
   Eye,
@@ -17,27 +18,20 @@ import {
 } from "../../Api/dashboardApi";
 import userAvatar from "../../assets/images/userAvatar.png";
 
-const TABS = ["All", "Pending", "Approved", "Rejected"];
+const TAB_KEYS = ["all", "pending", "approved", "rejected"];
 const ITEMS_PER_PAGE = 20;
 
-const statusConfig = {
-  pending: {
-    label: "pending",
-    className: "bg-amber-100 text-amber-700 border border-amber-200",
-  },
-  approved: {
-    label: "approved",
-    className: "bg-emerald-100 text-emerald-700 border border-emerald-200",
-  },
-  rejected: {
-    label: "rejected",
-    className: "bg-red-100 text-red-600 border border-red-200",
-  },
-  none: {
-    label: "not submitted",
-    className: "bg-gray-100 text-gray-600 border border-gray-200",
-  },
+const STATUS_CLASSNAMES = {
+  pending: "bg-amber-100 text-amber-700 border border-amber-200",
+  approved: "bg-emerald-100 text-emerald-700 border border-emerald-200",
+  rejected: "bg-red-100 text-red-600 border border-red-200",
+  none: "bg-gray-100 text-gray-600 border border-gray-200",
 };
+
+const getStatusConfig = (t, status) => ({
+  label: t(`driver.status.${status || "none"}`),
+  className: STATUS_CLASSNAMES[status] || STATUS_CLASSNAMES.none,
+});
 
 const normalizeDriver = (driver) => {
   const vehicle = driver.vehicle || {};
@@ -64,7 +58,7 @@ const normalizeDriver = (driver) => {
     carModel:
       vehicle.make || vehicle.model
         ? [vehicle.make, vehicle.model].filter(Boolean).join(" ")
-        : "No vehicle",
+        : null,
     carType: vehicle.car_type || "-",
     carPlate: vehicle.plate_number || "-",
     year: vehicle.year || "-",
@@ -78,6 +72,7 @@ const normalizeDriver = (driver) => {
 };
 
 function DocImage({ src, label }) {
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col gap-1.5">
       <span className="text-xs font-medium text-gray-500">{label}</span>
@@ -92,7 +87,9 @@ function DocImage({ src, label }) {
             }}
           />
         ) : (
-          <span className="text-gray-400 text-xs">No image</span>
+          <span className="text-gray-400 text-xs">
+            {t("driver.detailsModal.noImage")}
+          </span>
         )}
       </div>
     </div>
@@ -100,7 +97,10 @@ function DocImage({ src, label }) {
 }
 
 function ReasonModal({ driver, onClose }) {
-  const [subject, setSubject] = useState("Driver verification rejected");
+  const { t } = useTranslation();
+  const [subject, setSubject] = useState(
+    t("driver.reasonModal.subjectDefault")
+  );
   const [message, setMessage] = useState("");
   const [sendDriverEmail, { isLoading: sendingEmail }] =
     useSendDriverEmailMutation();
@@ -111,11 +111,11 @@ function ReasonModal({ driver, onClose }) {
 
   const handleReject = async () => {
     if (!subject.trim()) {
-      toast.error("Please enter a subject");
+      toast.error(t("driver.reasonModal.errorSubject"));
       return;
     }
     if (!message.trim()) {
-      toast.error("Please enter a rejection reason");
+      toast.error(t("driver.reasonModal.errorReason"));
       return;
     }
 
@@ -135,10 +135,10 @@ function ReasonModal({ driver, onClose }) {
         }).unwrap();
       }
 
-      toast.success("Driver rejected successfully");
+      toast.success(t("driver.reasonModal.successReject"));
       onClose();
     } catch (error) {
-      toast.error(error?.data?.message || "Failed to reject driver");
+      toast.error(error?.data?.message || t("driver.reasonModal.failedReject"));
     }
   };
 
@@ -147,7 +147,7 @@ function ReasonModal({ driver, onClose }) {
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden animate-fadeIn">
         <div className="flex items-center justify-between px-6 py-5 border-b border-gray/50">
           <h2 className="text-base font-semibold text-gray-900">
-            Reason for rejection
+            {t("driver.reasonModal.title")}
           </h2>
           <button
             onClick={onClose}
@@ -159,7 +159,7 @@ function ReasonModal({ driver, onClose }) {
         <div className="px-6 py-5 space-y-4">
           <div>
             <label className="block text-xs font-medium text-gray-500 mb-1.5">
-              To:
+              {t("driver.reasonModal.to")}
             </label>
             <input
               readOnly
@@ -169,7 +169,7 @@ function ReasonModal({ driver, onClose }) {
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-500 mb-1.5">
-              Subject:
+              {t("driver.reasonModal.subject")}
             </label>
             <input
               type="text"
@@ -180,12 +180,12 @@ function ReasonModal({ driver, onClose }) {
           </div>
           <div>
             <label className="block text-xs font-medium text-gray-500 mb-1.5">
-              Rejection reason:
+              {t("driver.reasonModal.reason")}
             </label>
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder="The profile is not complete."
+              placeholder={t("driver.reasonModal.placeholder")}
               rows={4}
               className="w-full px-4 py-3 rounded-xl border border-gray/50 focus:border-blue-400 focus:ring-2 focus:ring-blue-50 text-gray-800 text-sm outline-none transition-all resize-none"
             />
@@ -202,13 +202,13 @@ function ReasonModal({ driver, onClose }) {
             ) : (
               <Send className="w-4 h-4" />
             )}
-            Reject Driver
+            {t("driver.reasonModal.reject")}
           </button>
           <button
             onClick={onClose}
             className="px-5 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
           >
-            Cancel
+            {t("driver.reasonModal.cancel")}
           </button>
         </div>
       </div>
@@ -217,6 +217,7 @@ function ReasonModal({ driver, onClose }) {
 }
 
 function DetailsModal({ driver, onClose, onApprove, onReject, approving }) {
+  const { t } = useTranslation();
   const {
     data: details,
     isLoading,
@@ -225,7 +226,7 @@ function DetailsModal({ driver, onClose, onApprove, onReject, approving }) {
 
   const detailsPayload = details?.data ?? details ?? driver;
   const displayDriver = normalizeDriver(detailsPayload);
-  const st = statusConfig[displayDriver.status] || statusConfig.none;
+  const st = getStatusConfig(t, displayDriver.status);
   const [womenSafe, setWomenSafe] = useState(Boolean(displayDriver.womenSafe));
 
   useEffect(() => {
@@ -237,7 +238,7 @@ function DetailsModal({ driver, onClose, onApprove, onReject, approving }) {
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto animate-fadeIn">
         <div className="flex items-center justify-between px-6 pt-6 pb-4 sticky top-0 bg-white border-b border-gray/50 z-10">
           <h2 className="text-base font-semibold text-gray-900">
-            Driver Verification Details
+            {t("driver.detailsModal.title")}
           </h2>
           <button
             onClick={onClose}
@@ -250,12 +251,12 @@ function DetailsModal({ driver, onClose, onApprove, onReject, approving }) {
         {isLoading && (
           <div className="px-6 py-4 flex items-center gap-2 text-sm text-gray-500">
             <Loader2 className="w-4 h-4 animate-spin" />
-            Loading driver details...
+            {t("driver.detailsModal.loading")}
           </div>
         )}
         {isError && (
           <div className="mx-6 mt-4 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
-            Failed to load latest driver details. Showing list data.
+            {t("driver.detailsModal.failed")}
           </div>
         )}
 
@@ -287,26 +288,44 @@ function DetailsModal({ driver, onClose, onApprove, onReject, approving }) {
         </div>
 
         <div className="px-6 pb-4 grid grid-cols-2 gap-4">
-          <DocImage src={displayDriver.driverImage} label="Driver Photo" />
-          <DocImage src={displayDriver.numberPlate} label="Plate Photo" />
-          <DocImage src={displayDriver.carPhoto} label="Car Photo" />
-          <DocImage src={displayDriver.licenseFront} label="License Front" />
+          <DocImage
+            src={displayDriver.driverImage}
+            label={t("driver.detailsModal.photo")}
+          />
+          <DocImage
+            src={displayDriver.numberPlate}
+            label={t("driver.detailsModal.platePhoto")}
+          />
+          <DocImage
+            src={displayDriver.carPhoto}
+            label={t("driver.detailsModal.carPhoto")}
+          />
+          <DocImage
+            src={displayDriver.licenseFront}
+            label={t("driver.detailsModal.licenseFront")}
+          />
           <div className="col-span-2">
-            <DocImage src={displayDriver.licenseBack} label="License Back" />
+            <DocImage
+              src={displayDriver.licenseBack}
+              label={t("driver.detailsModal.licenseBack")}
+            />
           </div>
         </div>
 
         <div className="mx-6 mb-4 rounded-xl border border-gray/50 bg-gray-50 p-4">
           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
-            Car Details
+            {t("driver.detailsModal.carDetails")}
           </p>
           <div className="grid grid-cols-4 gap-2">
             {[
-              { label: "Car Model", value: displayDriver.carModel },
-              { label: "Type", value: displayDriver.carType },
-              { label: "Year", value: displayDriver.year },
-              { label: "Color", value: displayDriver.color },
-              { label: "Plate", value: displayDriver.carPlate },
+              {
+                label: t("driver.detailsModal.carModel"),
+                value: displayDriver.carModel || t("driver.detailsModal.noVehicle"),
+              },
+              { label: t("driver.detailsModal.type"), value: displayDriver.carType },
+              { label: t("driver.detailsModal.year"), value: displayDriver.year },
+              { label: t("driver.detailsModal.color"), value: displayDriver.color },
+              { label: t("driver.detailsModal.plate"), value: displayDriver.carPlate },
             ].map(({ label, value }) => (
               <div key={label}>
                 <p className="text-[10px] text-[#364153] mb-0.5">{label}</p>
@@ -320,7 +339,7 @@ function DetailsModal({ driver, onClose, onApprove, onReject, approving }) {
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className=" font-semibold text-gray-500 tracking-wider">
-                Women Safe
+                {t("driver.detailsModal.womenSafe")}
               </p>
             </div>
             <button
@@ -352,14 +371,14 @@ function DetailsModal({ driver, onClose, onApprove, onReject, approving }) {
             ) : (
               <ShieldCheck className="w-4 h-4" />
             )}
-            Approve Driver
+            {t("driver.detailsModal.approve")}
           </button>
           <button
             onClick={() => onReject(displayDriver)}
             className="flex items-center justify-center gap-2 py-3 rounded-xl bg-[#DC2626] text-white text-sm font-semibold hover:bg-[#B91C1C] transition-colors cursor-pointer"
           >
             <ShieldX className="w-4 h-4" />
-            Reject Driver
+            {t("driver.detailsModal.reject")}
           </button>
         </div>
       </div>
@@ -368,7 +387,8 @@ function DetailsModal({ driver, onClose, onApprove, onReject, approving }) {
 }
 
 export default function DriverVerification() {
-  const [activeTab, setActiveTab] = useState("All");
+  const { t } = useTranslation();
+  const [activeTab, setActiveTab] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedDriver, setSelectedDriver] = useState(null);
   const [rejectTarget, setRejectTarget] = useState(null);
@@ -390,9 +410,9 @@ export default function DriverVerification() {
   }, [driversResponse]);
 
   const filtered =
-    activeTab === "All"
+    activeTab === "all"
       ? drivers
-      : drivers.filter((driver) => driver.status === activeTab.toLowerCase());
+      : drivers.filter((driver) => driver.status === activeTab);
 
   const pagination = driversResponse?.pagination || {};
   const totalDrivers = pagination.total ?? drivers.length;
@@ -408,10 +428,10 @@ export default function DriverVerification() {
         kyc_status: "approved",
         women_safe: Boolean(womenSafe),
       }).unwrap();
-      toast.success(`${driver.name} approved successfully`);
+      toast.success(t("driver.detailsModal.successApprove", { name: driver.name }));
       setSelectedDriver(null);
     } catch (error) {
-      toast.error(error?.data?.message || "Failed to approve driver");
+      toast.error(error?.data?.message || t("driver.detailsModal.failedApprove"));
     }
   };
 
@@ -419,6 +439,15 @@ export default function DriverVerification() {
     setRejectTarget(driver);
     setSelectedDriver(null);
   };
+
+  const tableHeaders = [
+    t("driver.table.driver"),
+    t("driver.table.contact"),
+    t("driver.table.carDetails"),
+    t("driver.table.submittedDate"),
+    t("driver.table.status"),
+    t("driver.table.actions"),
+  ];
 
   return (
     <>
@@ -442,26 +471,26 @@ export default function DriverVerification() {
       <div className="p-8 min-h-screen bg-[#F8FAFC]">
         <div className="mb-6">
           <h1 className="text-2xl font-semibold text-[#1E293B]">
-            Driver Verification
+            {t("driver.title")}
           </h1>
           <p className="text-sm text-[#6A7282] mt-1">
-            Review and approve driver documents
+            {t("driver.subtitle")}
           </p>
         </div>
 
         <div className="bg-white rounded-2xl border border-gray/50 shadow-sm p-4 mb-6">
           <div className="flex items-center gap-2 flex-wrap">
-            {TABS.map((tab) => (
+            {TAB_KEYS.map((tabKey) => (
               <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
+                key={tabKey}
+                onClick={() => setActiveTab(tabKey)}
                 className={`px-5 py-2 rounded-xl text-sm font-medium transition-all cursor-pointer ${
-                  activeTab === tab
+                  activeTab === tabKey
                     ? "bg-[#1B2A5E] text-white shadow"
                     : "text-gray-600 hover:bg-gray-100 border border-gray/50"
                 }`}
               >
-                {tab}
+                {t(`driver.tabs.${tabKey}`)}
               </button>
             ))}
           </div>
@@ -472,26 +501,19 @@ export default function DriverVerification() {
             <div className="flex flex-col items-center justify-center py-20 gap-4">
               <Loader2 className="w-9 h-9 text-blue-500 animate-spin" />
               <p className="text-sm text-gray-500 font-medium">
-                Loading drivers...
+                {t("driver.table.loading")}
               </p>
             </div>
           ) : isError ? (
             <div className="px-6 py-16 text-center text-red-500 text-sm">
-              Failed to load drivers.
+              {t("driver.table.failed")}
             </div>
           ) : (
             <>
               <table className="w-full text-left">
                 <thead>
                   <tr className="border-b border-gray/50">
-                    {[
-                      "DRIVER",
-                      "CONTACT",
-                      "CAR DETAILS",
-                      "SUBMITTED DATE",
-                      "STATUS",
-                      "ACTIONS",
-                    ].map((h) => (
+                    {tableHeaders.map((h) => (
                       <th
                         key={h}
                         className="px-6 py-4 text-xs font-semibold text-[#364153] uppercase tracking-wider"
@@ -508,13 +530,12 @@ export default function DriverVerification() {
                         colSpan={6}
                         className="px-6 py-16 text-center text-[#364153] text-sm"
                       >
-                        No drivers found.
+                        {t("driver.table.noDrivers")}
                       </td>
                     </tr>
                   ) : (
                     filtered.map((driver) => {
-                      const st =
-                        statusConfig[driver.status] || statusConfig.none;
+                      const st = getStatusConfig(t, driver.status);
                       const isPending = driver.status === "pending";
 
                       return (
@@ -554,7 +575,7 @@ export default function DriverVerification() {
 
                           <td className="px-6 py-4">
                             <div className="text-sm text-gray-700">
-                              {driver.carModel}
+                              {driver.carModel || t("driver.detailsModal.noVehicle")}
                             </div>
                             <div className="text-xs text-[#364153] mt-0.5">
                               {driver.carPlate}
@@ -577,7 +598,7 @@ export default function DriverVerification() {
                             <div className="flex items-center gap-1">
                               <button
                                 onClick={() => setSelectedDriver(driver)}
-                                title="View Details"
+                                title={t("driver.detailsModal.title")}
                                 className="p-2 text-blue-500 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer"
                               >
                                 <Eye className="w-4 h-4" />
@@ -586,7 +607,7 @@ export default function DriverVerification() {
                                 <button
                                   onClick={() => handleApprove(driver)}
                                   disabled={approving}
-                                  title="Approve"
+                                  title={t("driver.detailsModal.approve")}
                                   className="p-2 text-emerald-500 hover:bg-emerald-50 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
                                 >
                                   {approving ? (
@@ -599,7 +620,7 @@ export default function DriverVerification() {
                               {isPending && (
                                 <button
                                   onClick={() => handleOpenReject(driver)}
-                                  title="Reject"
+                                  title={t("driver.detailsModal.reject")}
                                   className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
                                 >
                                   <X className="w-4 h-4" />
@@ -617,16 +638,11 @@ export default function DriverVerification() {
               {totalPages > 1 && (
                 <div className="flex items-center justify-between px-6 py-4 border-t border-gray/50 bg-gray-50">
                   <p className="text-xs text-gray-500">
-                    Showing{" "}
-                    <span className="font-semibold text-gray-700">
-                      {totalDrivers > 0 ? startIndex + 1 : 0}-
-                      {Math.min(startIndex + pageLimit, totalDrivers)}
-                    </span>{" "}
-                    of{" "}
-                    <span className="font-semibold text-gray-700">
-                      {totalDrivers}
-                    </span>{" "}
-                    drivers
+                    {t("driver.table.showing", {
+                      start: totalDrivers > 0 ? startIndex + 1 : 0,
+                      end: Math.min(startIndex + pageLimit, totalDrivers),
+                      total: totalDrivers,
+                    })}
                   </p>
                   <div className="flex items-center gap-1.5">
                     <button
@@ -634,7 +650,7 @@ export default function DriverVerification() {
                       disabled={currentPage === 1}
                       className="px-3 py-1.5 rounded-lg border border-gray/50 text-xs font-medium text-gray-600 hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                     >
-                      Prev
+                      {t("common.prev")}
                     </button>
                     {Array.from({ length: totalPages }, (_, i) => i + 1).map(
                       (page) => (
@@ -658,7 +674,7 @@ export default function DriverVerification() {
                       disabled={currentPage === totalPages}
                       className="px-3 py-1.5 rounded-lg border border-gray/50 text-xs font-medium text-gray-600 hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                     >
-                      Next
+                      {t("common.next")}
                     </button>
                   </div>
                 </div>

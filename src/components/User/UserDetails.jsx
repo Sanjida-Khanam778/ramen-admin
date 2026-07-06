@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ArrowLeft,
   Calendar,
@@ -22,17 +23,20 @@ import driverAvatar from "../../assets/images/driverAvatar.png";
 import toast from "react-hot-toast";
 
 function SendEmailModal({ userId, email, name, onClose }) {
-  const [subject, setSubject] = useState(`Platform update - ${name}`);
+  const { t } = useTranslation();
+  const [subject, setSubject] = useState(
+    t("user.emailModal.subjectDefault", { name })
+  );
   const [message, setMessage] = useState("");
   const [sendUserEmail, { isLoading: sending }] = useSendUserEmailMutation();
 
   const handleSend = async () => {
     if (!subject.trim()) {
-      toast.error("Please enter a subject");
+      toast.error(t("user.emailModal.errorSubject"));
       return;
     }
     if (!message.trim()) {
-      toast.error("Please enter a message");
+      toast.error(t("user.emailModal.errorMessage"));
       return;
     }
 
@@ -44,11 +48,13 @@ function SendEmailModal({ userId, email, name, onClose }) {
         message,
       }).unwrap();
       console.log(result);
-      toast.success(result?.message || `Email sent to ${email}`);
+      toast.success(
+        result?.message || t("user.emailModal.successToast", { email })
+      );
       onClose();
     } catch (error) {
       console.log(error);
-      toast.error(error?.data?.email[0] || "Failed to send email");
+      toast.error(error?.data?.email[0] || t("user.emailModal.errorToast"));
     }
   };
 
@@ -56,7 +62,9 @@ function SendEmailModal({ userId, email, name, onClose }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
         <div className="flex items-center justify-between px-6 py-5 border-b border-gray/50">
-          <h2 className="text-lg font-semibold text-gray-900">Send Email</h2>
+          <h2 className="text-lg font-semibold text-gray-900">
+            {t("user.emailModal.title")}
+          </h2>
           <button
             onClick={onClose}
             className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
@@ -67,7 +75,7 @@ function SendEmailModal({ userId, email, name, onClose }) {
         <div className="px-6 py-5 space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-600 mb-1.5">
-              To:
+              {t("user.emailModal.to")}
             </label>
             <input
               readOnly
@@ -77,7 +85,7 @@ function SendEmailModal({ userId, email, name, onClose }) {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-600 mb-1.5">
-              Subject:
+              {t("user.emailModal.subject")}
             </label>
             <input
               type="text"
@@ -88,12 +96,12 @@ function SendEmailModal({ userId, email, name, onClose }) {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-600 mb-1.5">
-              Message:
+              {t("user.emailModal.message")}
             </label>
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder="Enter your message"
+              placeholder={t("user.emailModal.placeholder")}
               rows={5}
               className="w-full px-4 py-3 rounded-xl border border-gray/50 focus:border-blue-400 focus:ring-2 focus:ring-blue-50 text-gray-800 text-sm outline-none transition-all resize-none"
             />
@@ -110,13 +118,13 @@ function SendEmailModal({ userId, email, name, onClose }) {
             ) : (
               <Send className="w-4 h-4" />
             )}
-            Send Email
+            {t("user.emailModal.send")}
           </button>
           <button
             onClick={onClose}
             className="px-6 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
           >
-            Cancel
+            {t("user.emailModal.cancel")}
           </button>
         </div>
       </div>
@@ -145,6 +153,7 @@ function StatCard({ icon, iconBg, iconColor, label, value }) {
 }
 
 const UserDetails = ({ user, onBack }) => {
+  const { t } = useTranslation();
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [blockingUser, setBlockingUser] = useState(false);
   const [localStatus, setLocalStatus] = useState(user?.status || "Active");
@@ -179,12 +188,12 @@ const UserDetails = ({ user, onBack }) => {
   if (!user) {
     return (
       <div className="p-8 flex flex-col items-center justify-center min-h-[400px]">
-        <p className="text-gray-500">No user selected.</p>
+        <p className="text-gray-500">{t("user.details.noUser")}</p>
         <button
           onClick={onBack}
           className="mt-4 px-5 py-2 rounded-xl border border-gray/50 text-sm"
         >
-          Go Back
+          {t("user.details.goBack")}
         </button>
       </div>
     );
@@ -237,9 +246,13 @@ const UserDetails = ({ user, onBack }) => {
         await updateUserStatus({ userId, is_active: willActivate }).unwrap();
       }
       setLocalStatus(newStatus);
-      toast.success(willActivate ? "User activated." : "User suspended.");
+      toast.success(
+        willActivate
+          ? t("user.details.actions.toastActivated")
+          : t("user.details.actions.toastSuspended")
+      );
     } catch {
-      toast.error("Failed to update user status.");
+      toast.error(t("user.details.actions.toastFailed"));
     } finally {
       setBlockingUser(false);
     }
@@ -260,12 +273,12 @@ const UserDetails = ({ user, onBack }) => {
         {loadingDetails && (
           <div className="mb-5 flex items-center gap-2 text-sm text-gray-500">
             <Loader2 className="w-4 h-4 animate-spin" />
-            Loading latest user details...
+            {t("user.details.loading")}
           </div>
         )}
         {detailsError && (
           <div className="mb-5 rounded-xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-600">
-            Failed to load latest user details. Showing selected row data.
+            {t("user.details.failed")}
           </div>
         )}
 
@@ -277,9 +290,11 @@ const UserDetails = ({ user, onBack }) => {
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
-            <p className="text-xl font-semibold text-gray-400">User Profile</p>
+            <p className="text-xl font-semibold text-gray-400">
+              {t("user.details.title")}
+            </p>
             <h1 className="text-sm text-[#4A5565]">
-              View and manage user details
+              {t("user.details.subtitle")}
             </h1>
           </div>
         </div>
@@ -301,7 +316,9 @@ const UserDetails = ({ user, onBack }) => {
                   <h2 className="text-lg font-semibold text-gray-900">
                     {fullName}
                   </h2>
-                  <p className="text-sm text-[#4A5565] mt-0.5">ID: {userId}</p>
+                  <p className="text-sm text-[#4A5565] mt-0.5">
+                    {t("user.details.id", { id: userId })}
+                  </p>
                 </div>
                 <span
                   className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${
@@ -310,7 +327,9 @@ const UserDetails = ({ user, onBack }) => {
                       : "bg-green-50 text-green-600"
                   }`}
                 >
-                  {isBlocked ? "suspended" : "active"}
+                  {isBlocked
+                    ? t("user.table.statuses.suspended")
+                    : t("user.table.statuses.active")}
                 </span>
               </div>
 
@@ -329,7 +348,7 @@ const UserDetails = ({ user, onBack }) => {
                 )}
                 <span className="flex items-center gap-1.5">
                   <Calendar className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                  Joined {dateJoined}
+                  {t("user.details.joined", { date: dateJoined })}
                 </span>
                 <span
                   className={`items-center w-fit px-2.5 py-0.5 rounded-full text-xs font-medium ${
@@ -338,7 +357,9 @@ const UserDetails = ({ user, onBack }) => {
                       : "bg-purple-50 text-purple-600"
                   }`}
                 >
-                  {detailsUser.user_type || (isDriver ? "driver" : "passenger")}
+                  {isDriver
+                    ? t("overview.roles.driver")
+                    : t("overview.roles.passenger")}
                 </span>
               </div>
             </div>
@@ -350,14 +371,14 @@ const UserDetails = ({ user, onBack }) => {
             icon={MapPin}
             iconBg="bg-blue-50"
             iconColor="text-blue-500"
-            label="Total Trips"
+            label={t("user.details.stats.totalTrips")}
             value={totalTrips !== null ? totalTrips.toLocaleString() : "-"}
           />
           <StatCard
             icon={CheckCircle}
             iconBg="bg-green-50"
             iconColor="text-green-500"
-            label="Completed Trips"
+            label={t("user.details.stats.completedTrips")}
             value={
               completedTrips !== null ? completedTrips.toLocaleString() : "-"
             }
@@ -366,14 +387,14 @@ const UserDetails = ({ user, onBack }) => {
             icon={Star}
             iconBg="bg-yellow-50"
             iconColor="text-yellow-500"
-            label="Rating"
+            label={t("user.details.stats.rating")}
             value={rating !== null ? parseFloat(rating).toFixed(1) : "-"}
           />
           <StatCard
             icon={DollarSign}
             iconBg="bg-emerald-50"
             iconColor="text-emerald-500"
-            label="Total Earnings"
+            label={t("user.details.stats.totalEarnings")}
             value={
               earnings !== null
                 ? `$${parseFloat(earnings).toLocaleString(undefined, {
@@ -387,7 +408,7 @@ const UserDetails = ({ user, onBack }) => {
 
         <div className="bg-white rounded-2xl border border-gray/50 shadow-sm p-6">
           <h3 className="text-sm font-semibold text-gray-700 mb-4">
-            Admin Actions
+            {t("user.details.actions.title")}
           </h3>
           <div className="flex items-center flex-wrap gap-3">
             <button
@@ -400,7 +421,9 @@ const UserDetails = ({ user, onBack }) => {
               }`}
             >
               {blockingUser && <Loader2 className="w-4 h-4 animate-spin" />}
-              {isBlocked ? "Activate User" : "Suspend User"}
+              {isBlocked
+                ? t("user.details.actions.activate")
+                : t("user.details.actions.suspend")}
             </button>
 
             <button
@@ -409,7 +432,7 @@ const UserDetails = ({ user, onBack }) => {
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium bg-white border border-gray/50 text-gray-700 hover:bg-gray-50 transition-all cursor-pointer shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <Mail className="w-4 h-4" />
-              Send Email
+              {t("user.details.actions.sendEmail")}
             </button>
           </div>
         </div>

@@ -8,19 +8,23 @@ import userAvatar from "../../assets/images/userAvatar.png";
 import driverAvatar from "../../assets/images/driverAvatar.png";
 import toast from "react-hot-toast";
 import { FaStar } from "react-icons/fa";
+import { useTranslation } from "react-i18next";
 
 function SendEmailModal({ user, onClose }) {
-  const [subject, setSubject] = useState(`Platform update - ${user.full_name}`);
+  const [subject, setSubject] = useState(` t("user.emailModal.subjectDefault", {
+    name: user.full_name,
+  })`);
   const [message, setMessage] = useState("");
   const [sendUserEmail, { isLoading: sending }] = useSendUserEmailMutation();
+  const { t } = useTranslation();
 
   const handleSend = async () => {
     if (!subject.trim()) {
-      toast.error("Please enter a subject");
+      toast.error(t("user.emailModal.errorSubject"));
       return;
     }
     if (!message.trim()) {
-      toast.error("Please enter a message");
+      toast.error(t("user.emailModal.errorMessage"));
       return;
     }
 
@@ -31,10 +35,15 @@ function SendEmailModal({ user, onClose }) {
         subject,
         message,
       }).unwrap();
-      toast.success(result?.message || `Email sent to ${user.email}`);
+      toast.success(
+        result?.message ||
+          t("user.emailModal.successToast", {
+            email: user.email,
+          }),
+      );
       onClose();
     } catch (error) {
-      toast.error(error?.data?.message || "Failed to send email");
+      toast.error(error?.data?.message || t("user.emailModal.errorToast"));
     }
   };
 
@@ -42,7 +51,9 @@ function SendEmailModal({ user, onClose }) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
         <div className="flex items-center justify-between px-6 py-5 border-b border-gray/50">
-          <h2 className="text-lg font-semibold text-gray-900">Send Email</h2>
+          <h2 className="text-lg font-semibold text-gray-900">
+            {t("user.emailModal.title")}
+          </h2>
           <button
             onClick={onClose}
             className="p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
@@ -53,7 +64,7 @@ function SendEmailModal({ user, onClose }) {
         <div className="px-6 py-5 space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-600 mb-1.5">
-              To:
+              {t("user.emailModal.to")}:
             </label>
             <input
               readOnly
@@ -63,7 +74,7 @@ function SendEmailModal({ user, onClose }) {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-600 mb-1.5">
-              Subject:
+              {t("user.emailModal.subject")}:
             </label>
             <input
               type="text"
@@ -74,12 +85,12 @@ function SendEmailModal({ user, onClose }) {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-600 mb-1.5">
-              Message:
+              {t("user.emailModal.message")}:
             </label>
             <textarea
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder="Enter your message"
+              placeholder={t("user.emailModal.placeholder")}
               rows={5}
               className="w-full px-4 py-3 rounded-xl border border-gray/50 focus:border-blue-400 focus:ring-2 focus:ring-blue-50 text-gray-800 text-sm outline-none transition-all resize-none"
             />
@@ -96,25 +107,19 @@ function SendEmailModal({ user, onClose }) {
             ) : (
               <Send className="w-4 h-4" />
             )}
-            Send Email
+            {t("user.emailModal.send")}
           </button>
           <button
             onClick={onClose}
             className="px-6 py-2.5 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-100 transition-colors cursor-pointer"
           >
-            Cancel
+            {t("user.emailModal.cancel")}{" "}
           </button>
         </div>
       </div>
     </div>
   );
 }
-
-const TABS = [
-  { id: "all", label: "All Users" },
-  { id: "driver", label: "Drivers" },
-  { id: "passenger", label: "Passengers" },
-];
 
 const ITEMS_PER_PAGE = 8;
 
@@ -129,7 +134,8 @@ const normalizeUser = (u, idx) => ({
   is_active: u.is_active,
   is_email_verified: u.is_email_verified,
   is_phone_verified: u.is_phone_verified,
-  is_driver: u.user_type === "driver" || u.role === "Driver" || u.is_driver === true,
+  is_driver:
+    u.user_type === "driver" || u.role === "Driver" || u.is_driver === true,
   user_type: u.user_type,
   preferred_language: u.preferred_language,
   date_joined: u.date_joined || u.created_at || null,
@@ -144,7 +150,21 @@ const UserTable = ({ onViewUser }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [emailTarget, setEmailTarget] = useState(null);
-
+  const { t } = useTranslation();
+  const TABS = [
+    {
+      id: "all",
+      label: t("user.tabs.all"),
+    },
+    {
+      id: "driver",
+      label: t("user.tabs.drivers"),
+    },
+    {
+      id: "passenger",
+      label: t("user.tabs.passengers"),
+    },
+  ];
   const queryParams = useMemo(
     () => ({
       user_type: activeTab === "all" ? undefined : activeTab,
@@ -153,7 +173,7 @@ const UserTable = ({ onViewUser }) => {
       page: currentPage,
       limit: ITEMS_PER_PAGE,
     }),
-    [activeTab, searchQuery, currentPage]
+    [activeTab, searchQuery, currentPage],
   );
 
   const {
@@ -182,12 +202,22 @@ const UserTable = ({ onViewUser }) => {
 
   const getStatusStyle = (status) => {
     const s = (status || "").toLowerCase();
-    if (s === "active" || s === "verified") return "bg-[#DCFCE7] text-[#15803D]";
-    if (s === "suspended" || s === "blocked" || s === "banned") return "bg-[#FEE2E2] text-[#DC2626]";
+    if (s === "active" || s === "verified")
+      return "bg-[#DCFCE7] text-[#15803D]";
+    if (s === "suspended" || s === "blocked" || s === "banned")
+      return "bg-[#FEE2E2] text-[#DC2626]";
     if (s === "pending verification") return "bg-[#FEF9C3] text-[#A16207]";
     return "bg-gray-100 text-gray-500";
   };
+  // const getStatusKey = (status = "") => {
+  //   const s = status.toLowerCase();
 
+  //   if (s === "active" || s === "verified") return "active";
+  //   if (s === "suspended" || s === "blocked" || s === "banned")
+  //     return "suspended";
+
+  //   return "pending";
+  // };
   const formatTrips = (completed, total) => {
     if (completed !== null && total !== null) return `${completed}/${total}`;
     if (total !== null) return `${total}`;
@@ -197,13 +227,18 @@ const UserTable = ({ onViewUser }) => {
   return (
     <>
       {emailTarget && (
-        <SendEmailModal user={emailTarget} onClose={() => setEmailTarget(null)} />
+        <SendEmailModal
+          user={emailTarget}
+          onClose={() => setEmailTarget(null)}
+        />
       )}
 
       <div className="p-8">
         <div className="mb-6">
-          <h1 className="text-2xl font-semibold text-[#1E293B]">User Management</h1>
-          <p className="text-sm text-[#6A7282] mt-1">Manage drivers and passengers</p>
+          <h1 className="text-2xl font-semibold text-[#1E293B]">
+            {t("user.title")}
+          </h1>
+          <p className="text-sm text-[#6A7282] mt-1">{t("user.subtitle")}</p>
         </div>
 
         <div className="bg-white rounded-2xl border border-gray/50 shadow-sm p-4 mb-6 flex flex-col sm:flex-row items-center gap-4">
@@ -211,7 +246,7 @@ const UserTable = ({ onViewUser }) => {
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Search by name or email..."
+              placeholder={t("user.searchPlaceholder")}
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
@@ -241,18 +276,28 @@ const UserTable = ({ onViewUser }) => {
           {isLoading || isFetching ? (
             <div className="flex flex-col items-center justify-center py-20 gap-4">
               <Loader2 className="w-9 h-9 text-blue-500 animate-spin" />
-              <p className="text-sm text-gray-500 font-medium">Loading users...</p>
+              <p className="text-sm text-gray-500 font-medium">
+                {t("user.table.loading")}
+              </p>
             </div>
           ) : isError ? (
             <div className="px-6 py-16 text-center text-red-500 text-sm">
-              Failed to load users.
+              {t("user.table.failed")}
             </div>
           ) : (
             <>
               <table className="w-full text-left">
                 <thead>
                   <tr className="border-b border-gray/50">
-                    {["User", "Contact", "Role", "Trips", "Rating", "Status", "Actions"].map((h) => (
+                    {[
+                      t("user.table.user"),
+                      t("user.table.contact"),
+                      t("user.table.role"),
+                      t("user.table.trips"),
+                      t("user.table.rating"),
+                      t("user.table.status"),
+                      t("user.table.actions"),
+                    ].map((h) => (
                       <th
                         key={h}
                         className={`px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider ${h === "Actions" ? "text-right" : ""}`}
@@ -265,17 +310,26 @@ const UserTable = ({ onViewUser }) => {
                 <tbody className="divide-y divide-gray/50">
                   {usersData.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="px-6 py-16 text-center text-gray-400 text-sm">
-                        No users found.
+                      <td
+                        colSpan={7}
+                        className="px-6 py-16 text-center text-gray-400 text-sm"
+                      >
+                        {t("user.table.noUsers")}
                       </td>
                     </tr>
                   ) : (
                     usersData.map((user) => (
-                      <tr key={user.user_id} className="hover:bg-gray-50 transition-colors">
+                      <tr
+                        key={user.user_id}
+                        className="hover:bg-gray-50 transition-colors"
+                      >
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
                             <img
-                              src={user.profile_picture || (user.is_driver ? driverAvatar : userAvatar)}
+                              src={
+                                user.profile_picture ||
+                                (user.is_driver ? driverAvatar : userAvatar)
+                              }
                               alt=""
                               className="w-10 h-10 rounded-full object-cover"
                               onError={(e) => {
@@ -283,22 +337,35 @@ const UserTable = ({ onViewUser }) => {
                               }}
                             />
                             <div>
-                              <div className="text-sm font-medium text-gray-900">{user.full_name}</div>
-                              <div className="text-xs text-gray-400 mt-0.5">{user.user_id}</div>
+                              <div className="text-sm font-medium text-gray-900">
+                                {user.full_name}
+                              </div>
+                              <div className="text-xs text-gray-400 mt-0.5">
+                                {user.user_id}
+                              </div>
                             </div>
                           </div>
                         </td>
 
                         <td className="px-6 py-4">
-                          <div className="text-sm text-gray-700">{user.email || "-"}</div>
-                          <div className="text-xs text-gray-400 mt-0.5">{user.phone_number || "-"}</div>
+                          <div className="text-sm text-gray-700">
+                            {user.email || "-"}
+                          </div>
+                          <div className="text-xs text-gray-400 mt-0.5">
+                            {user.phone_number || "-"}
+                          </div>
                         </td>
 
                         <td className="px-6 py-4">
-                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                            user.is_driver ? "bg-blue-50 text-blue-600" : "bg-purple-50 text-purple-600"
-                          }`}>
-                            {user.user_type || (user.is_driver ? "driver" : "passenger")}
+                          <span
+                            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+                              user.is_driver
+                                ? "bg-blue-50 text-blue-600"
+                                : "bg-purple-50 text-purple-600"
+                            }`}
+                          >
+                            {user.user_type ||
+                              (user.is_driver ? "driver" : "passenger")}
                           </span>
                         </td>
 
@@ -310,7 +377,9 @@ const UserTable = ({ onViewUser }) => {
                           {user.rating !== null ? (
                             <span className="text-sm flex items-center gap-1 text-gray-700">
                               {parseFloat(user.rating).toFixed(1)}{" "}
-                              <span className="text-yellow-400"><FaStar /> </span>
+                              <span className="text-yellow-400">
+                                <FaStar />{" "}
+                              </span>
                             </span>
                           ) : (
                             <span className="text-sm text-gray-400">-</span>
@@ -318,8 +387,12 @@ const UserTable = ({ onViewUser }) => {
                         </td>
 
                         <td className="px-6 py-4">
-                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusStyle(user.status)}`}>
-                            {(user.status || "active").toLowerCase()}
+                          <span
+                            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${getStatusStyle(user.status)}`}
+                          >
+                            {t(
+                              `user.table.statuses.${(user.status || "active").toLowerCase()}`,
+                            )}
                           </span>
                         </td>
 
@@ -351,11 +424,11 @@ const UserTable = ({ onViewUser }) => {
               {totalPages > 1 && (
                 <div className="flex items-center justify-between px-6 py-4 border-t border-gray/50 bg-gray-50">
                   <p className="text-xs text-gray-500">
-                    Showing{" "}
-                    <span className="font-semibold text-gray-700">
-                      {totalUsers > 0 ? startIndex + 1 : 0}-{Math.min(startIndex + pageLimit, totalUsers)}
-                    </span>{" "}
-                    of <span className="font-semibold text-gray-700">{totalUsers}</span> users
+                    {t("user.table.showing", {
+                      start: totalUsers > 0 ? startIndex + 1 : 0,
+                      end: Math.min(startIndex + pageLimit, totalUsers),
+                      total: totalUsers,
+                    })}
                   </p>
                   <div className="flex items-center gap-1.5">
                     <button
@@ -365,21 +438,25 @@ const UserTable = ({ onViewUser }) => {
                     >
                       Prev
                     </button>
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                      <button
-                        key={page}
-                        onClick={() => setCurrentPage(page)}
-                        className={`w-8 h-8 rounded-lg text-xs font-semibold transition-all ${
-                          currentPage === page
-                            ? "bg-[#1B2A5E] text-white shadow"
-                            : "text-gray-500 hover:bg-white border border-gray/50"
-                        }`}
-                      >
-                        {page}
-                      </button>
-                    ))}
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(
+                      (page) => (
+                        <button
+                          key={page}
+                          onClick={() => setCurrentPage(page)}
+                          className={`w-8 h-8 rounded-lg text-xs font-semibold transition-all ${
+                            currentPage === page
+                              ? "bg-[#1B2A5E] text-white shadow"
+                              : "text-gray-500 hover:bg-white border border-gray/50"
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      ),
+                    )}
                     <button
-                      onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                      onClick={() =>
+                        setCurrentPage((p) => Math.min(totalPages, p + 1))
+                      }
                       disabled={currentPage === totalPages}
                       className="px-3 py-1.5 rounded-lg border border-gray/50 text-xs font-medium text-gray-600 hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                     >
