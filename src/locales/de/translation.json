@@ -235,7 +235,7 @@
     }
   },
   "promo": {
-    "title": "Promo-Code-Management",
+    "title": "Gutscheinverwaltung",
     "subtitle": "Erstellen und verwalten Sie Aktionscodes für Ihre Mitfahr-App",
     "createBtn": "Aktionscode erstellen",
     "stats": {

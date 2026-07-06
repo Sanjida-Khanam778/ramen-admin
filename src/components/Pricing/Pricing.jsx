@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   useGetPricingRulesQuery,
   useCreatePricingRuleMutation,
@@ -47,15 +48,16 @@ function Spinner({ cls = "w-4 h-4 text-white" }) {
 }
 
 function Badge({ active }) {
+  const { t } = useTranslation();
   return active ? (
     <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block" />
-      Active
+      {t("common.active")}
     </span>
   ) : (
     <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200">
       <span className="w-1.5 h-1.5 rounded-full bg-slate-400 inline-block" />
-      Inactive
+      {t("common.inactive")}
     </span>
   );
 }
@@ -80,6 +82,7 @@ function CarIcon() {
 
 // ─── Confirm-delete modal ─────────────────────────────────────────────────────
 function ConfirmModal({ rule, onConfirm, onCancel, isDeleting }) {
+  const { t } = useTranslation();
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
@@ -99,13 +102,10 @@ function ConfirmModal({ rule, onConfirm, onCancel, isDeleting }) {
           </svg>
         </div>
         <h3 className="text-base font-bold text-slate-800 mb-1">
-          Delete Pricing Rule?
+          {t("pricing.confirmModal.title")}
         </h3>
         <p className="text-sm text-slate-500 mb-6">
-          This will permanently delete the{" "}
-          <span className="font-semibold capitalize">{rule.car_type}</span> /{" "}
-          <span className="font-semibold capitalize">{rule.ride_mode}</span>{" "}
-          rule.
+          {t("pricing.confirmModal.message")}
         </p>
         <div className="flex gap-3">
           <button
@@ -113,7 +113,7 @@ function ConfirmModal({ rule, onConfirm, onCancel, isDeleting }) {
             disabled={isDeleting}
             className="flex-1 bg-slate-100 hover:bg-slate-200 disabled:opacity-60 text-slate-700 text-sm font-semibold py-2.5 rounded-lg transition-colors"
           >
-            Cancel
+            {t("pricing.confirmModal.cancelBtn")}
           </button>
           <button
             onClick={onConfirm}
@@ -121,7 +121,7 @@ function ConfirmModal({ rule, onConfirm, onCancel, isDeleting }) {
             className="flex-1 flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-700 disabled:opacity-60 text-white text-sm font-semibold py-2.5 rounded-lg transition-colors"
           >
             {isDeleting ? <Spinner /> : null}
-            Delete
+            {t("pricing.confirmModal.deleteBtn")}
           </button>
         </div>
       </div>
@@ -138,6 +138,7 @@ function RowForm({
   isSaving,
   isNew = false,
 }) {
+  const { t } = useTranslation();
   return (
     <tr
       className={`${isNew ? "bg-blue-50/60" : "bg-amber-50/40"} border-b border-slate-100`}
@@ -149,9 +150,9 @@ function RowForm({
           onChange={(e) => onChange("car_type", e.target.value)}
           className="w-full border border-slate-200 rounded-lg px-2 py-1.5 text-sm text-slate-700 outline-none focus:ring-2 focus:ring-blue-500 bg-white capitalize"
         >
-          {CAR_TYPES.map((t) => (
-            <option key={t} value={t} className="capitalize">
-              {t}
+          {CAR_TYPES.map((ct) => (
+            <option key={ct} value={ct} className="capitalize">
+              {t(`pricing.formModal.carTypes.${ct}`)}
             </option>
           ))}
         </select>
@@ -165,7 +166,7 @@ function RowForm({
         >
           {RIDE_MODES.map((m) => (
             <option key={m} value={m} className="capitalize">
-              {m}
+              {t(`pricing.formModal.rideModes.${m}`)}
             </option>
           ))}
         </select>
@@ -225,14 +226,14 @@ function RowForm({
             className="flex items-center gap-1 bg-blue-900 hover:bg-blue-800 disabled:opacity-60 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors"
           >
             {isSaving ? <Spinner cls="w-3 h-3 text-white" /> : null}
-            {isNew ? "Add" : "Save"}
+            {isNew ? t("common.create") : t("common.save")}
           </button>
           <button
             onClick={onCancel}
             disabled={isSaving}
             className="text-xs font-semibold text-slate-500 hover:text-slate-700 px-2 py-1.5 rounded-lg hover:bg-slate-100 transition-colors"
           >
-            Cancel
+            {t("common.cancel")}
           </button>
         </div>
       </td>
@@ -242,6 +243,7 @@ function RowForm({
 
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 export default function PricingManagement() {
+  const { t } = useTranslation();
   const { data, isLoading, isError } = useGetPricingRulesQuery();
   const [createRule, { isLoading: isCreating }] =
     useCreatePricingRuleMutation();
@@ -280,7 +282,12 @@ export default function PricingManagement() {
     const duplicateKey = `${carType}::${rideMode}`;
 
     if (ruleKeySet.has(duplicateKey)) {
-      toast.error("This car type and ride mode combination already exists.");
+      toast.error(
+        t(
+          "pricing.duplicateError",
+          "This car type and ride mode combination already exists.",
+        ),
+      );
       return;
     }
 
@@ -294,9 +301,9 @@ export default function PricingManagement() {
       }).unwrap();
       setShowNew(false);
       setNewForm({ ...BLANK_FORM });
-      toast.success("Pricing rule created.");
+      toast.success(t("pricing.formModal.toastCreateSuccess"));
     } catch (err) {
-      toast.error(err?.data?.detail || "Failed to create rule.");
+      toast.error(err?.data?.detail || t("pricing.formModal.toastCreateFailed"));
     }
   };
 
@@ -325,7 +332,7 @@ export default function PricingManagement() {
     );
 
     if (isDuplicate) {
-      toast.error("This car type and ride mode combination already exists.");
+      toast.error(t("pricing.duplicateError", "This car type and ride mode combination already exists."));
       return;
     }
 
@@ -339,9 +346,9 @@ export default function PricingManagement() {
         is_active: editForm.is_active,
       }).unwrap();
       setEditId(null);
-      toast.success("Pricing rule updated.");
+      toast.success(t("pricing.formModal.toastUpdateSuccess"));
     } catch (err) {
-      toast.error(err?.data?.detail || "Failed to update rule.");
+      toast.error(err?.data?.detail || t("pricing.formModal.toastUpdateFailed"));
     }
   };
 
@@ -350,9 +357,9 @@ export default function PricingManagement() {
     try {
       await deleteRule(deleteTarget.id).unwrap();
       setDeleteTarget(null);
-      toast.success("Pricing rule deleted.");
+      toast.success(t("pricing.formModal.toastDeleteSuccess"));
     } catch (err) {
-      toast.error(err?.data?.detail || "Failed to delete rule.");
+      toast.error(err?.data?.detail || t("pricing.formModal.toastDeleteFailed"));
     }
   };
 
@@ -362,10 +369,10 @@ export default function PricingManagement() {
       <div className="flex items-start justify-between mb-6 gap-4">
         <div>
           <h1 className="text-2xl font-bold text-slate-800 tracking-tight">
-            Pricing Rules
+            {t("pricing.title")}
           </h1>
           <p className="text-sm text-slate-500 mt-0.5">
-            Manage per car-type and ride-mode pricing
+            {t("pricing.subtitle")}
           </p>
         </div>
         {!showNew && (
@@ -389,7 +396,7 @@ export default function PricingManagement() {
                 d="M12 4v16m8-8H4"
               />
             </svg>
-            Add Rule
+            {t("pricing.createBtn")}
           </button>
         )}
       </div>
@@ -398,10 +405,13 @@ export default function PricingManagement() {
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
           <h2 className="text-sm font-bold text-slate-800">
-            All Pricing Rules
+            {t("pricing.title")}
           </h2>
           <span className="text-xs text-slate-400">
-            {rules.length} rule{rules.length !== 1 ? "s" : ""}
+            {t("pricing.table.showing", {
+              count: rules.length,
+              total: rules.length,
+            })}
           </span>
         </div>
 
@@ -410,12 +420,12 @@ export default function PricingManagement() {
             <thead>
               <tr className="border-b border-slate-100 bg-slate-50/60">
                 {[
-                  "Car Type",
-                  "Ride Mode",
-                  "Base Fare",
-                  "Per KM Rate",
-                  "Status",
-                  "Actions",
+                  t("pricing.table.carType"),
+                  t("pricing.table.rideMode"),
+                  t("pricing.table.baseFare"),
+                  t("pricing.table.perKmRate"),
+                  t("pricing.table.status"),
+                  t("pricing.table.actions"),
                 ].map((h) => (
                   <th
                     key={h}
@@ -452,7 +462,7 @@ export default function PricingManagement() {
                   >
                     <div className="flex items-center justify-center gap-2">
                       <Spinner cls="w-4 h-4 text-blue-500" />
-                      Loading pricing rules…
+                      {t("pricing.table.loading")}
                     </div>
                   </td>
                 </tr>
@@ -465,7 +475,7 @@ export default function PricingManagement() {
                     colSpan={6}
                     className="py-12 text-center text-rose-500 text-sm"
                   >
-                    Failed to load pricing rules.
+                    {t("pricing.table.failed")}
                   </td>
                 </tr>
               )}
@@ -477,11 +487,7 @@ export default function PricingManagement() {
                     colSpan={6}
                     className="py-16 text-center text-slate-400 text-sm"
                   >
-                    No pricing rules yet. Click{" "}
-                    <span className="font-semibold text-blue-700">
-                      Add Rule
-                    </span>{" "}
-                    to create one.
+                    {t("pricing.table.noRules")}
                   </td>
                 </tr>
               )}
@@ -509,14 +515,14 @@ export default function PricingManagement() {
                           <CarIcon />
                         </div>
                         <span className="font-semibold text-slate-800 capitalize">
-                          {rule.car_type}
+                          {t(`pricing.formModal.carTypes.${normalizeRuleValue(rule.car_type)}`, rule.car_type)}
                         </span>
                       </div>
                     </td>
                     {/* Ride Mode */}
                     <td className="px-4 py-4">
                       <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600 capitalize">
-                        {rule.ride_mode}
+                        {t(`pricing.formModal.rideModes.${normalizeRuleValue(rule.ride_mode)}`, rule.ride_mode)}
                       </span>
                     </td>
                     {/* Base Fare */}
@@ -546,7 +552,7 @@ export default function PricingManagement() {
                             startEdit(rule);
                             setShowNew(false);
                           }}
-                          title="Edit"
+                          title={t("common.edit")}
                           className="text-slate-400 hover:text-blue-600 p-1.5 rounded-lg hover:bg-blue-50 transition-colors"
                         >
                           <svg
@@ -565,7 +571,7 @@ export default function PricingManagement() {
                         </button>
                         <button
                           onClick={() => setDeleteTarget(rule)}
-                          title="Delete"
+                          title={t("common.delete")}
                           className="text-slate-400 hover:text-rose-600 p-1.5 rounded-lg hover:bg-rose-50 transition-colors"
                         >
                           <svg
@@ -594,8 +600,10 @@ export default function PricingManagement() {
         {/* Pagination info */}
         {data?.pagination && (
           <div className="px-5 py-3 border-t border-slate-100 text-xs text-slate-400">
-            Showing {rules.length} of {data.pagination.total} rule
-            {data.pagination.total !== 1 ? "s" : ""}
+            {t("pricing.table.showing", {
+              count: rules.length,
+              total: data.pagination.total,
+            })}
           </div>
         )}
       </div>
