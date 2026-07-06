@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import {
   useGetSettingsQuery,
   useGetTransactionStatsQuery,
@@ -13,6 +14,7 @@ function calcCharge(earnings, rate) {
 
 // ─── Transaction status badge ─────────────────────────────────────────────────
 function StatusBadge({ status }) {
+  const { t } = useTranslation();
   const map = {
     paid: "bg-emerald-50 text-emerald-700 border border-emerald-200",
     pending: "bg-amber-50 text-amber-700 border border-amber-200",
@@ -21,7 +23,7 @@ function StatusBadge({ status }) {
   };
   return (
     <span className={`text-xs font-semibold px-2.5 py-1 rounded-full capitalize ${map[status] || map.pending}`}>
-      {status}
+      {t(`commission.table.${status}`, status)}
     </span>
   );
 }
@@ -46,67 +48,70 @@ function Modal({ children, onClose, title }) {
 
 // ─── Transaction Detail Modal ─────────────────────────────────────────────────
 function TransactionDetailModal({ transactionId, onClose, formatMoney }) {
+  const { t } = useTranslation();
   const { data: tx, isLoading } = useGetTransactionByIdQuery(transactionId, {
     skip: !transactionId,
   });
 
   return (
-    <Modal title="Transaction Details" onClose={onClose}>
+    <Modal title={t("commission.detailModal.title")} onClose={onClose}>
       <div className="px-6 py-5 space-y-4">
         {isLoading ? (
-          <p className="text-slate-500 text-sm text-center py-4">Loading transaction details…</p>
+          <p className="text-slate-500 text-sm text-center py-4">
+            {t("commission.detailModal.loading")}
+          </p>
         ) : tx ? (
           <>
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-xs text-slate-400 mb-0.5">Transaction ID</p>
+                <p className="text-xs text-slate-400 mb-0.5">{t("commission.detailModal.txId")}</p>
                 <p className="font-semibold text-slate-800 text-xs font-mono truncate">{tx.id}</p>
               </div>
               <div>
-                <p className="text-xs text-slate-400 mb-0.5">Ride ID</p>
+                <p className="text-xs text-slate-400 mb-0.5">{t("commission.detailModal.rideId")}</p>
                 <p className="font-semibold text-slate-800 text-xs font-mono truncate">{tx.ride_id || "—"}</p>
               </div>
               <div>
-                <p className="text-xs text-slate-400 mb-0.5">Driver</p>
+                <p className="text-xs text-slate-400 mb-0.5">{t("commission.detailModal.driver")}</p>
                 <p className="font-semibold text-slate-800">{tx.driver_name}</p>
                 <p className="text-xs text-slate-400">{tx.driver_phone}</p>
               </div>
               <div>
-                <p className="text-xs text-slate-400 mb-0.5">Passenger</p>
+                <p className="text-xs text-slate-400 mb-0.5">{t("commission.detailModal.passenger")}</p>
                 <p className="font-semibold text-slate-800">{tx.passenger_name}</p>
                 <p className="text-xs text-slate-400">{tx.passenger_phone}</p>
               </div>
               <div>
-                <p className="text-xs text-slate-400 mb-0.5">Payment Method</p>
+                <p className="text-xs text-slate-400 mb-0.5">{t("commission.detailModal.method")}</p>
                 <p className="font-semibold text-slate-800 capitalize">{tx.payment_method || "—"}</p>
               </div>
               <div>
-                <p className="text-xs text-slate-400 mb-0.5">Status</p>
+                <p className="text-xs text-slate-400 mb-0.5">{t("commission.detailModal.status")}</p>
                 <StatusBadge status={tx.payment_status} />
               </div>
               <div>
-                <p className="text-xs text-slate-400 mb-0.5">Ride Mode</p>
+                <p className="text-xs text-slate-400 mb-0.5">{t("commission.detailModal.mode")}</p>
                 <p className="font-semibold text-slate-800 capitalize">{tx.ride_mode || "—"}</p>
               </div>
               <div>
-                <p className="text-xs text-slate-400 mb-0.5">Ride Status</p>
+                <p className="text-xs text-slate-400 mb-0.5">{t("commission.detailModal.rideStatus")}</p>
                 <p className="font-semibold text-slate-800 capitalize">{tx.ride_status || "—"}</p>
               </div>
             </div>
 
             <div>
-              <p className="text-sm font-bold text-slate-800 mb-3">Payment Breakdown</p>
+              <p className="text-sm font-bold text-slate-800 mb-3">{t("commission.detailModal.breakdown")}</p>
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-500">Total Amount</span>
+                  <span className="text-slate-500">{t("commission.detailModal.total")}</span>
                   <span className="font-semibold text-slate-800">{formatMoney(tx.total_amount)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-500">Platform Fee</span>
+                  <span className="text-slate-500">{t("commission.detailModal.fee")}</span>
                   <span className="font-semibold text-rose-500">{formatMoney(tx.platform_fee)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-slate-500">Driver Earnings</span>
+                  <span className="text-slate-500">{t("commission.detailModal.earnings")}</span>
                   <span className="font-semibold text-emerald-600">{formatMoney(tx.driver_earnings)}</span>
                 </div>
               </div>
@@ -116,13 +121,13 @@ function TransactionDetailModal({ transactionId, onClose, formatMoney }) {
               <div className="space-y-2 border-t border-slate-100 pt-3">
                 {tx.payment_initiated_at && (
                   <div className="flex justify-between text-sm">
-                    <span className="text-slate-500">Payment Initiated</span>
+                    <span className="text-slate-500">{t("commission.detailModal.initiated")}</span>
                     <span className="text-slate-700 font-medium">{tx.payment_initiated_at}</span>
                   </div>
                 )}
                 {tx.payment_confirmed_at && (
                   <div className="flex justify-between text-sm">
-                    <span className="text-slate-500">Payment Confirmed</span>
+                    <span className="text-slate-500">{t("commission.detailModal.confirmed")}</span>
                     <span className="text-slate-700 font-medium">{tx.payment_confirmed_at}</span>
                   </div>
                 )}
@@ -130,7 +135,7 @@ function TransactionDetailModal({ transactionId, onClose, formatMoney }) {
             )}
           </>
         ) : (
-          <p className="text-slate-500 text-sm text-center py-4">No details available.</p>
+          <p className="text-slate-500 text-sm text-center py-4">{t("commission.detailModal.noDetails")}</p>
         )}
       </div>
     </Modal>
@@ -149,6 +154,7 @@ function Spinner({ color = "text-white" }) {
 
 // ─── Main ──────────────────────────────────────────────────────────────────────
 export default function RateCommissionManagement() {
+  const { t } = useTranslation();
   const [kmRate, setKmRate] = useState(1.5);
   const [serviceCharge, setServiceCharge] = useState(20);
   const [baseFare, setBaseFare] = useState(100);
@@ -206,9 +212,9 @@ export default function RateCommissionManagement() {
     const newKm = parseFloat(editingKm);
     const newSvc = parseFloat(editingService);
     const newBase = parseFloat(editingBaseFare);
-    if (isNaN(newKm) || newKm <= 0) { setSettingsError("Per KM rate must be a positive number."); return; }
-    if (isNaN(newSvc) || newSvc <= 0 || newSvc > 100) { setSettingsError("Service charge must be between 1 and 100."); return; }
-    if (isNaN(newBase) || newBase <= 0) { setSettingsError("Base fare must be a positive number."); return; }
+    if (isNaN(newKm) || newKm <= 0) { setSettingsError(t("commission.settingsCard.errorKm")); return; }
+    if (isNaN(newSvc) || newSvc <= 0 || newSvc > 100) { setSettingsError(t("commission.settingsCard.errorSvc")); return; }
+    if (isNaN(newBase) || newBase <= 0) { setSettingsError(t("commission.settingsCard.errorBase")); return; }
     setSettingsError("");
     try {
       await Promise.all([
@@ -221,7 +227,7 @@ export default function RateCommissionManagement() {
       setBaseFare(newBase);
       setIsEditing(false);
     } catch (err) {
-      setSettingsError(err?.data?.detail || "Failed to save settings. Please try again.");
+      setSettingsError(err?.data?.detail || t("commission.settingsCard.failedSave"));
     }
   };
 
@@ -239,47 +245,64 @@ export default function RateCommissionManagement() {
 
   const statsCards = [
     {
-      label: "Total Rides",
+      label: t("commission.stats.totalRides"),
       value: overview.total_rides != null ? overview.total_rides.toLocaleString() : "—",
       color: "text-slate-800",
       icon: <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>,
       iconBg: "bg-blue-50",
     },
     {
-      label: "Total Revenue",
+      label: t("commission.stats.totalRevenue"),
       value: overview.total_revenue != null ? formatMoney(overview.total_revenue) : "—",
       color: "text-slate-800",
       icon: <svg className="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
       iconBg: "bg-emerald-50",
     },
     {
-      label: "Platform Earnings",
+      label: t("commission.stats.platformEarnings"),
       value: overview.total_platform_earnings != null ? formatMoney(overview.total_platform_earnings) : "—",
       color: "text-slate-800",
       icon: <svg className="w-5 h-5 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>,
       iconBg: "bg-violet-50",
     },
     {
-      label: "Driver Earnings",
+      label: t("commission.stats.driverEarnings"),
       value: overview.total_driver_earnings != null ? formatMoney(overview.total_driver_earnings) : "—",
       color: "text-slate-800",
       icon: <svg className="w-5 h-5 text-cyan-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>,
       iconBg: "bg-cyan-50",
     },
     {
-      label: "Average Fare",
+      label: t("commission.stats.averageFare"),
       value: overview.average_fare != null ? formatMoney(overview.average_fare) : "—",
       color: "text-slate-800",
       icon: <svg className="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
       iconBg: "bg-amber-50",
     },
     {
-      label: "Success Rate",
+      label: t("commission.stats.successRate"),
       value: overview.success_rate_percentage != null ? formatPercent(overview.success_rate_percentage) : "—",
       color: "text-emerald-600",
       icon: <svg className="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>,
       iconBg: "bg-emerald-50",
     },
+  ];
+
+  const filterTabs = [
+    ["all", t("commission.table.all")],
+    ["paid", t("commission.table.paid")],
+    ["pending", t("commission.table.pending")],
+    ["failed", t("commission.table.failed")],
+  ];
+
+  const tableHeaders = [
+    t("commission.detailModal.driver"),
+    t("commission.table.cols.amount"),
+    t("commission.table.cols.commission"),
+    t("commission.table.cols.driverEarnings"),
+    t("commission.detailModal.method"),
+    t("commission.table.cols.status"),
+    t("commission.table.cols.actions"),
   ];
 
   return (
@@ -291,26 +314,26 @@ export default function RateCommissionManagement() {
 
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Rate & Commission Management</h1>
-        <p className="text-sm text-slate-500 mt-0.5">Manage platform rates, service charges, and driver earnings</p>
+        <h1 className="text-2xl font-bold text-slate-800 tracking-tight">{t("commission.title")}</h1>
+        <p className="text-sm text-slate-500 mt-0.5">{t("commission.subtitle")}</p>
       </div>
 
       {/* Platform Settings Card */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 mb-5">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-base font-bold text-slate-800">Platform Settings</h2>
+          <h2 className="text-base font-bold text-slate-800">{t("commission.settingsCard.title")}</h2>
           {!isEditing ? (
             <button onClick={startEdit} className="bg-blue-900 hover:bg-blue-800 text-white text-sm font-semibold px-5 py-2 rounded-lg transition-colors">
-              Edit Settings
+              {t("commission.settingsCard.editBtn")}
             </button>
           ) : (
             <div className="flex gap-2">
               <button onClick={saveEdit} disabled={isSaving} className="flex items-center gap-2 bg-blue-900 hover:bg-blue-800 disabled:opacity-60 text-white text-sm font-semibold px-5 py-2 rounded-lg transition-colors">
                 {isSaving && <Spinner />}
-                {isSaving ? "Saving…" : "Save Changes"}
+                {isSaving ? t("common.processing") : t("commission.settingsCard.saveBtn")}
               </button>
               <button onClick={cancelEdit} disabled={isSaving} className="bg-slate-100 hover:bg-slate-200 disabled:opacity-60 text-slate-700 text-sm font-semibold px-4 py-2 rounded-lg transition-colors">
-                Cancel
+                {t("commission.settingsCard.cancelBtn")}
               </button>
             </div>
           )}
@@ -344,14 +367,13 @@ export default function RateCommissionManagement() {
                 <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-blue-700 mb-1">Per Kilometer Rate</p>
+                <p className="text-xs font-semibold text-blue-700 mb-1">{t("commission.settingsCard.perKm")}</p>
                 {isEditing ? (
                   <input type="number" value={editingKm} onChange={(e) => setEditingKm(e.target.value)}
                     className="w-28 border border-blue-300 bg-white rounded-lg px-3 py-1.5 text-xl font-bold text-blue-900 outline-none focus:ring-2 focus:ring-blue-500 transition" step="0.1" min="0" autoFocus />
                 ) : (
                   <p className="text-2xl font-bold text-blue-900">${kmRate.toFixed(2)}/km</p>
                 )}
-                <p className="text-xs text-blue-600 mt-1">Base rate charged per kilometer of travel</p>
               </div>
             </div>
 
@@ -361,14 +383,13 @@ export default function RateCommissionManagement() {
                 <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h.01M17 17h.01M9.5 9.5l5 5M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a2 2 0 012-2z" /></svg>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-purple-700 mb-1">Platform Service Charge</p>
+                <p className="text-xs font-semibold text-purple-700 mb-1">{t("commission.settingsCard.serviceCharge")}</p>
                 {isEditing ? (
                   <input type="number" value={editingService} onChange={(e) => setEditingService(e.target.value)}
                     className="w-24 border border-purple-300 bg-white rounded-lg px-3 py-1.5 text-xl font-bold text-purple-700 outline-none focus:ring-2 focus:ring-purple-500 transition" step="1" min="0" max="100" />
                 ) : (
                   <p className="text-2xl font-bold text-purple-700">{serviceCharge}%</p>
                 )}
-                <p className="text-xs text-purple-500 mt-1">Percentage charged on each ride as commission</p>
               </div>
             </div>
 
@@ -378,14 +399,13 @@ export default function RateCommissionManagement() {
                 <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-emerald-700 mb-1">Base Fare</p>
+                <p className="text-xs font-semibold text-emerald-700 mb-1">{t("commission.settingsCard.baseFare")}</p>
                 {isEditing ? (
                   <input type="number" value={editingBaseFare} onChange={(e) => setEditingBaseFare(e.target.value)}
                     className="w-28 border border-emerald-300 bg-white rounded-lg px-3 py-1.5 text-xl font-bold text-emerald-700 outline-none focus:ring-2 focus:ring-emerald-500 transition" step="1" min="0" />
                 ) : (
                   <p className="text-2xl font-bold text-emerald-700">${baseFare.toFixed(2)}</p>
                 )}
-                <p className="text-xs text-emerald-600 mt-1">Minimum price charged per ride</p>
               </div>
             </div>
           </div>
@@ -400,7 +420,7 @@ export default function RateCommissionManagement() {
             <div>
               <p className="text-xs text-slate-400 font-medium">{s.label}</p>
               <p className={`text-lg font-bold leading-tight ${s.color}`}>
-                {isStatsLoading ? "Loading…" : s.value}
+                {isStatsLoading ? t("common.loading") : s.value}
               </p>
             </div>
           </div>
@@ -410,15 +430,10 @@ export default function RateCommissionManagement() {
       {/* Transaction Table — same design as old driver table */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         <div className="px-5 py-4 border-b border-slate-100 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h3 className="text-base font-bold text-slate-800">Driver Platform Charges</h3>
+          <h3 className="text-base font-bold text-slate-800">{t("commission.table.title")}</h3>
           {/* Filter tabs — same style as old driver filter */}
           <div className="flex gap-1.5">
-            {[
-              ["all", "All"],
-              ["paid", "Paid"],
-              ["pending", "Pending"],
-              ["failed", "Failed"],
-            ].map(([value, label]) => (
+            {filterTabs.map(([value, label]) => (
               <button
                 key={value}
                 onClick={() => { setTransactionPaymentStatus(value); setTransactionPage(1); }}
@@ -436,18 +451,18 @@ export default function RateCommissionManagement() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-100">
-                {["Driver", "Total Earnings", "Platform Charge", "Driver Earnings", "Payment Method", "Status", "Actions"].map((h) => (
+                {tableHeaders.map((h) => (
                   <th key={h} className="text-left text-xs font-semibold text-slate-400 uppercase tracking-wider px-5 py-3">{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
               {isTransactionsLoading ? (
-                <tr><td colSpan={7} className="px-4 py-8 text-center text-slate-500">Loading transactions…</td></tr>
+                <tr><td colSpan={7} className="px-4 py-8 text-center text-slate-500">{t("commission.table.loading")}</td></tr>
               ) : isTransactionsError ? (
-                <tr><td colSpan={7} className="px-4 py-8 text-center text-rose-600">Failed to load transactions.</td></tr>
+                <tr><td colSpan={7} className="px-4 py-8 text-center text-rose-600">{t("commission.table.failedLoad")}</td></tr>
               ) : transactionList.length === 0 ? (
-                <tr><td colSpan={7} className="px-4 py-8 text-center text-slate-500">No transactions found.</td></tr>
+                <tr><td colSpan={7} className="px-4 py-8 text-center text-slate-500">{t("commission.table.noTx")}</td></tr>
               ) : (
                 transactionList.map((tx) => (
                   <tr key={tx.id} className="hover:bg-slate-50/70 transition-colors">
@@ -472,7 +487,7 @@ export default function RateCommissionManagement() {
                         <button
                           onClick={() => setSelectedTransactionId(tx.id)}
                           className="text-slate-400 hover:text-blue-600 transition-colors p-1 rounded"
-                          title="View Details"
+                          title={t("commission.detailModal.title")}
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -491,7 +506,7 @@ export default function RateCommissionManagement() {
         {/* Pagination */}
         <div className="px-5 py-4 border-t border-slate-100 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-slate-500">
-            Showing {transactionList.length} of {transactionCount} transactions
+            {t("commission.table.showing", { count: transactionList.length, total: transactionCount })}
           </p>
           <div className="inline-flex items-center gap-2">
             <button
@@ -499,15 +514,15 @@ export default function RateCommissionManagement() {
               disabled={transactionPage === 1}
               className="px-4 py-2 rounded-lg border border-slate-200 text-sm font-semibold text-slate-700 bg-white disabled:opacity-50"
             >
-              Previous
+              {t("common.prev")}
             </button>
-            <span className="text-sm text-slate-600">Page {transactionPage}</span>
+            <span className="text-sm text-slate-600">{transactionPage}</span>
             <button
               onClick={() => setTransactionPage((p) => p + 1)}
               disabled={transactionList.length < 10}
               className="px-4 py-2 rounded-lg border border-slate-200 text-sm font-semibold text-slate-700 bg-white disabled:opacity-50"
             >
-              Next
+              {t("common.next")}
             </button>
           </div>
         </div>
