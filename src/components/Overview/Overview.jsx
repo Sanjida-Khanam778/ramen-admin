@@ -18,6 +18,10 @@ import {
   useGetAdminRecentRidesQuery,
   useGetAdminRecentUsersQuery,
 } from "../../Api/dashboardApi";
+import {
+  useGetUserStatsQuery,
+  useGetTransactionStatsQuery,
+} from "../../Api/couponApi";
 import { useTranslation } from "react-i18next";
 
 // Import avatar assets
@@ -33,10 +37,38 @@ export default function Overview() {
   const { data: recentRidesData } = useGetAdminRecentRidesQuery();
   const { data: recentUsersData } = useGetAdminRecentUsersQuery();
 
+  // New: user stats (total/active/suspended users, drivers, passengers)
+  const { data: userStatsData, isLoading: isUserStatsLoading } =
+    useGetUserStatsQuery();
+  console.log(userStatsData);
+  // New: transaction stats (platform earnings, revenue, success rate)
+  const { data: txnStatsData, isLoading: isTxnStatsLoading } =
+    useGetTransactionStatsQuery();
+  console.log(txnStatsData);
   const totals = data?.totals || {};
   const revenue = totals.revenue?.value ?? 0;
   const users = totals.users?.value ?? 0;
   const drivers = totals.drivers?.value ?? 0;
+
+  // ── User stats derived values ──────────────────────────────────────────────
+  const userOverview = userStatsData?.overview || {};
+  const byStatus = userStatsData?.by_status || {};
+
+  const totalUsersCount = userOverview.total_users ?? 0;
+
+  const totalDriversCount =
+    (byStatus.active?.drivers ?? 0) + (byStatus.suspended?.drivers ?? 0);
+
+  const totalPassengersCount =
+    (byStatus.active?.passengers ?? 0) + (byStatus.suspended?.passengers ?? 0);
+
+  // ── Transaction stats derived values ───────────────────────────────────────
+  const txnOverview = txnStatsData?.overview || {};
+  const totalPlatformEarnings = Number(
+    txnOverview.total_platform_earnings ?? 0,
+  );
+  const totalRevenue = Number(txnOverview.total_revenue ?? 0);
+  const successRate = txnOverview.success_rate_percentage;
 
   const userGrowth =
     Array.isArray(rideAnalyticsData?.graph_data) &&
@@ -67,89 +99,49 @@ export default function Overview() {
 
   const status = error?.status ?? error?.originalStatus ?? null;
   const errorMessage =
-    status === 401 ? t("overview.errors.unauthorized") : t("overview.errors.failedLoad");
+    status === 401
+      ? t("overview.errors.unauthorized")
+      : t("overview.errors.failedLoad");
 
-  // Card metrics parsing with mock fallbacks matching the mockup
+  // 6 stat cards — first 3 from user-stats API, last 3 from transaction-stats API
   const metrics = [
     {
       title: t("overview.metrics.totalUsers"),
-      value: isLoading ? "12,847" : users ? users.toLocaleString() : "12,847",
+      value: isUserStatsLoading ? "..." : totalUsersCount.toLocaleString(),
       icon: Users,
       iconBg: "bg-[#2563EB]", // Blue
     },
     {
       title: t("overview.metrics.totalDrivers"),
-      value: isLoading ? "4,523" : drivers ? drivers.toLocaleString() : "4,523",
+      value: isUserStatsLoading ? "..." : totalDriversCount.toLocaleString(),
       icon: Car,
       iconBg: "bg-[#00D154]", // Green
     },
     {
       title: t("overview.metrics.totalPassengers"),
-      value: isLoading
-        ? "8,324"
-        : users && drivers
-          ? (users - drivers).toLocaleString()
-          : "8,324",
+      value: isUserStatsLoading ? "..." : totalPassengersCount.toLocaleString(),
       icon: User,
       iconBg: "bg-[#A855F7]", // Purple
     },
     {
-      title: t("overview.metrics.totalTrips"),
-      value: isLoading
-        ? "45,678"
-        : totals.trips?.value
-          ? totals.trips.value.toLocaleString()
-          : "45,678",
-      icon: MapPin,
-      iconBg: "bg-[#FF6600]", // Orange
-    },
-    {
-      title: t("overview.metrics.completedTrips"),
-      value: isLoading
-        ? "43,892"
-        : totals.completed_trips?.value
-          ? totals.completed_trips.value.toLocaleString()
-          : "43,892",
-      icon: CheckCircle,
-      iconBg: "bg-[#00C5A0]", // Teal
-    },
-    {
-      title: t("overview.metrics.cancelledTrips"),
-      value: isLoading
-        ? "1,786"
-        : totals.cancelled_trips?.value
-          ? totals.cancelled_trips.value.toLocaleString()
-          : "1,786",
-      icon: XCircle,
-      iconBg: "bg-[#EF4444]", // Red
-    },
-    {
-      title: t("overview.metrics.totalEarnings"),
-      value: isLoading
-        ? "$1,234,567.89"
-        : revenue
-          ? formatCurrency(revenue)
-          : "$1,234,567.89",
-      icon: DollarSign,
-      iconBg: "bg-[#00D154]", // Green
-    },
-    {
-      title: t("overview.metrics.pendingPayments"),
-      value: isLoading
-        ? "$23,456.50"
-        : totals.pending_payments?.value
-          ? formatCurrency(totals.pending_payments.value)
-          : "$23,456.50",
+      title: t("overview.metrics.totalRevenue"), // total_revenue
+      value: isTxnStatsLoading ? "..." : formatCurrency(totalRevenue),
       icon: Clock,
       iconBg: "bg-[#EAB308]", // Yellow/Gold
     },
     {
-      title: t("overview.metrics.averageRating"),
-      value: isLoading
-        ? "4.7"
-        : totals.average_rating?.value
-          ? totals.average_rating.value.toFixed(1)
-          : "4.7",
+      title: t("overview.metrics.totalEarnings"), // total_platform_earnings
+      value: isTxnStatsLoading ? "..." : formatCurrency(totalPlatformEarnings),
+      icon: DollarSign,
+      iconBg: "bg-[#00D154]", // Green
+    },
+    {
+      title: t("overview.metrics.successRate"), // success_rate_percentage
+      value: isTxnStatsLoading
+        ? "..."
+        : successRate !== undefined
+          ? `${successRate}%`
+          : "0%",
       icon: Star,
       iconBg: "bg-[#F59E0B]", // Orange/Gold
     },
@@ -166,11 +158,17 @@ export default function Overview() {
 
     if (diffMins < 1) return t("overview.time.justNow");
     if (diffMins < 60)
-      return diffMins === 1 ? t("overview.time.minuteAgo", { count: 1 }) : t("overview.time.minutesAgo", { count: diffMins });
+      return diffMins === 1
+        ? t("overview.time.minuteAgo", { count: 1 })
+        : t("overview.time.minutesAgo", { count: diffMins });
     if (diffHours < 24)
-      return diffHours === 1 ? t("overview.time.hourAgo", { count: 1 }) : t("overview.time.hoursAgo", { count: diffHours });
+      return diffHours === 1
+        ? t("overview.time.hourAgo", { count: 1 })
+        : t("overview.time.hoursAgo", { count: diffHours });
     if (diffDays < 7)
-      return diffDays === 1 ? t("overview.time.dayAgo", { count: 1 }) : t("overview.time.daysAgo", { count: diffDays });
+      return diffDays === 1
+        ? t("overview.time.dayAgo", { count: 1 })
+        : t("overview.time.daysAgo", { count: diffDays });
     return then.toLocaleDateString();
   };
 
@@ -281,10 +279,12 @@ export default function Overview() {
           <h1 className="text-2xl font-semibold text-[#1E293B]">
             {t("overview.title")}
           </h1>
-          <p className="text-sm text-[#6A7282] mt-1">{t("overview.subtitle")}</p>
+          <p className="text-sm text-[#6A7282] mt-1">
+            {t("overview.subtitle")}
+          </p>
         </div>
 
-        {/* 9 Stat Cards Grid */}
+        {/* 6 Stat Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {metrics.map((card, idx) => {
             const IconComponent = card.icon;

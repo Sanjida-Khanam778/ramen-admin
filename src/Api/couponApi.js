@@ -67,6 +67,15 @@ export const couponApi = api.injectEndpoints({
       invalidatesTags: ["coupons"],
     }),
 
+    // GET /admin/dashboard/users/stats/ — user overview stats (total/active/suspended by type)
+    getUserStats: builder.query({
+      query: () => ({
+        url: `admin/dashboard/users/stats/`,
+        method: "GET",
+      }),
+      providesTags: ["user-stats"],
+    }),
+
     // GET /admin/settings/ — fetch all platform settings
     getSettings: builder.query({
       query: () => ({
@@ -257,6 +266,7 @@ export const {
   useUpdateCouponMutation,
   useDisableCouponMutation,
   useDeleteCouponMutation,
+  useGetUserStatsQuery,
   useGetSettingsQuery,
   useGetTransactionStatsQuery,
   useGetTransactionsQuery,

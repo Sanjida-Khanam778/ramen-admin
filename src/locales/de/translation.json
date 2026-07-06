@@ -42,9 +42,9 @@
       "totalTrips": "Gesamtfahrten",
       "completedTrips": "Abgeschlossene Fahrten",
       "cancelledTrips": "Stornierte Fahrten",
-      "totalEarnings": "Gesamteinnahmen",
-      "pendingPayments": "Ausstehende Zahlungen",
-      "averageRating": "Durchschnittliche Bewertung"
+      "totalEarnings": "Gesamteinnahmen der Plattform",
+      "totalRevenue": "Gesamtumsatz",
+      "successRate": "Erfolgsquote"
     },
     "recentRides": "Kürzliche Fahrten",
     "newlyRegisteredUsers": "Neu registrierte Nutzer",

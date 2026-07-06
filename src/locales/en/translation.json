@@ -42,9 +42,9 @@
       "totalTrips": "Total Trips",
       "completedTrips": "Completed Trips",
       "cancelledTrips": "Cancelled Trips",
-      "totalEarnings": "Total Earnings",
-      "pendingPayments": "Pending Payments",
-      "averageRating": "Average Rating"
+      "totalEarnings": "Total Platform Earnings",
+      "totalRevenue": "Total Revenue",
+      "successRate": "Success Rate"
     },
     "recentRides": "Recent Rides",
     "newlyRegisteredUsers": "Newly Registered Users",
