@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 import {
   useGetCouponsQuery,
@@ -73,6 +74,7 @@ const emptyForm = {
 // ─── small UI pieces ───────────────────────────────────────────────────────────
 
 function StatusBadge({ status }) {
+  const { t } = useTranslation();
   const styles = {
     active: "bg-emerald-50 text-emerald-700 border border-emerald-200",
     expired: "bg-amber-50 text-amber-700 border border-amber-200",
@@ -80,7 +82,7 @@ function StatusBadge({ status }) {
   };
   return (
     <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${styles[status] || styles.disabled}`}>
-      {status}
+      {t(`promo.badge.${status}`)}
     </span>
   );
 }
@@ -167,6 +169,7 @@ function inputCls(hasError) {
 // ─── Create / Edit Modal ───────────────────────────────────────────────────────
 
 function CouponFormModal({ onClose, onSubmit, initialData, isLoading, mode = "create" }) {
+  const { t } = useTranslation();
   const [form, setForm] = useState(
     initialData
       ? {
@@ -190,10 +193,10 @@ function CouponFormModal({ onClose, onSubmit, initialData, isLoading, mode = "cr
 
   const validate = () => {
     const e = {};
-    if (!form.code.trim()) e.code = "Required";
-    if (!form.discountValue) e.discountValue = "Required";
-    if (!form.validFrom) e.validFrom = "Required";
-    if (!form.validUntil) e.validUntil = "Required";
+    if (!form.code.trim()) e.code = t("promo.formModal.errorRequired");
+    if (!form.discountValue) e.discountValue = t("promo.formModal.errorRequired");
+    if (!form.validFrom) e.validFrom = t("promo.formModal.errorRequired");
+    if (!form.validUntil) e.validUntil = t("promo.formModal.errorRequired");
     return e;
   };
 
@@ -207,71 +210,71 @@ function CouponFormModal({ onClose, onSubmit, initialData, isLoading, mode = "cr
     <Modal onClose={onClose}>
       <div className="p-6">
         <h2 className="text-lg font-bold text-slate-800 mb-5">
-          {mode === "edit" ? "Edit Coupon" : "Create New Promo Code"}
+          {mode === "edit" ? t("promo.formModal.titleEdit") : t("promo.formModal.titleCreate")}
         </h2>
         <div className="space-y-4">
-          <Field label="Promo Code" id="code" required error={errors.code}>
+          <Field label={t("promo.formModal.code")} id="code" required error={errors.code}>
             <input
               className={inputCls(!!errors.code)}
-              placeholder="e.g., SAVE20"
+              placeholder={t("promo.formModal.codePlaceholder")}
               value={form.code}
               disabled={mode === "edit"}
               onChange={(e) => set("code", e.target.value)}
             />
           </Field>
 
-          <Field label="Title" id="title" error={errors.title}>
-            <input className={inputCls(false)} placeholder="e.g., Summer Sale" value={form.title}
+          <Field label={t("promo.formModal.title")} id="title" error={errors.title}>
+            <input className={inputCls(false)} placeholder={t("promo.formModal.titlePlaceholder")} value={form.title}
               onChange={(e) => set("title", e.target.value)} />
           </Field>
 
-          <Field label="Description" id="description" error={errors.description}>
-            <input className={inputCls(false)} placeholder="e.g., Get 20% off your next ride" value={form.description}
+          <Field label={t("promo.formModal.description")} id="description" error={errors.description}>
+            <input className={inputCls(false)} placeholder={t("promo.formModal.descriptionPlaceholder")} value={form.description}
               onChange={(e) => set("description", e.target.value)} />
           </Field>
 
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Discount Type" id="discountType" required error={errors.discountType}>
+            <Field label={t("promo.formModal.discountType")} id="discountType" required error={errors.discountType}>
               <select className={inputCls(false)} value={form.discountType}
                 onChange={(e) => set("discountType", e.target.value)}>
-                <option value="percentage">Percentage (%)</option>
-                <option value="fixed">Fixed ($)</option>
+                <option value="percentage">{t("promo.formModal.percentage")}</option>
+                <option value="fixed">{t("promo.formModal.fixed")}</option>
               </select>
             </Field>
-            <Field label="Discount Value" id="discountValue" required error={errors.discountValue}>
+            <Field label={t("promo.formModal.discountValue")} id="discountValue" required error={errors.discountValue}>
               <input className={inputCls(!!errors.discountValue)} type="number" placeholder="10" value={form.discountValue}
                 onChange={(e) => set("discountValue", e.target.value)} />
             </Field>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Max Discount ($)" id="maxDiscount" error={errors.maxDiscount}>
+            <Field label={t("promo.formModal.maxDiscount")} id="maxDiscount" error={errors.maxDiscount}>
               <input className={inputCls(false)} type="number" placeholder="15.00" value={form.maxDiscount}
                 onChange={(e) => set("maxDiscount", e.target.value)} />
             </Field>
-            <Field label="Min Order ($)" id="minOrder" error={errors.minOrder}>
+            <Field label={t("promo.formModal.minOrder")} id="minOrder" error={errors.minOrder}>
               <input className={inputCls(false)} type="number" placeholder="50.00" value={form.minOrder}
                 onChange={(e) => set("minOrder", e.target.value)} />
             </Field>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Usage Limit" id="usageLimit" error={errors.usageLimit}>
-              <input className={inputCls(false)} type="number" placeholder="Unlimited" value={form.usageLimit}
+            <Field label={t("promo.formModal.usageLimit")} id="usageLimit" error={errors.usageLimit}>
+              <input className={inputCls(false)} type="number" placeholder={t("promo.formModal.usageLimitPlaceholder")} value={form.usageLimit}
                 onChange={(e) => set("usageLimit", e.target.value)} />
             </Field>
-            <Field label="Max Uses / User" id="maxUsesPerUser" error={errors.maxUsesPerUser}>
+            <Field label={t("promo.formModal.maxUsesPerUser")} id="maxUsesPerUser" error={errors.maxUsesPerUser}>
               <input className={inputCls(false)} type="number" placeholder="1" value={form.maxUsesPerUser}
                 onChange={(e) => set("maxUsesPerUser", e.target.value)} />
             </Field>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <Field label="Valid From" id="validFrom" required error={errors.validFrom}>
+            <Field label={t("promo.formModal.validFrom")} id="validFrom" required error={errors.validFrom}>
               <input className={inputCls(!!errors.validFrom)} type="date" value={form.validFrom}
                 onChange={(e) => set("validFrom", e.target.value)} />
             </Field>
-            <Field label="Valid Until" id="validUntil" required error={errors.validUntil}>
+            <Field label={t("promo.formModal.validUntil")} id="validUntil" required error={errors.validUntil}>
               <input className={inputCls(!!errors.validUntil)} type="date" value={form.validUntil}
                 onChange={(e) => set("validUntil", e.target.value)} />
             </Field>
@@ -285,11 +288,11 @@ function CouponFormModal({ onClose, onSubmit, initialData, isLoading, mode = "cr
             className="flex-1 bg-blue-900 hover:bg-blue-800 disabled:opacity-60 text-white text-sm font-semibold py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2"
           >
             {isLoading && <Spinner />}
-            {mode === "edit" ? "Save Changes" : "Create Promo Code"}
+            {mode === "edit" ? t("promo.formModal.save") : t("promo.formModal.create")}
           </button>
           <button onClick={onClose}
             className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold py-2.5 rounded-lg transition-colors">
-            Cancel
+            {t("promo.formModal.cancel")}
           </button>
         </div>
       </div>
@@ -300,6 +303,7 @@ function CouponFormModal({ onClose, onSubmit, initialData, isLoading, mode = "cr
 // ─── Detail Modal ──────────────────────────────────────────────────────────────
 
 function DetailModal({ couponId, onClose, onDisable, onEdit, isDisabling }) {
+  const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
 
   // Fetch fresh detail data from API
@@ -320,11 +324,11 @@ function DetailModal({ couponId, onClose, onDisable, onEdit, isDisabling }) {
   return (
     <Modal onClose={onClose}>
       <div className="p-6">
-        <h2 className="text-lg font-bold text-slate-800 mb-5">Promo Code Details</h2>
+        <h2 className="text-lg font-bold text-slate-800 mb-5">{t("promo.detailModal.title")}</h2>
 
         {isDetailLoading || !promo ? (
           <div className="flex items-center justify-center py-12 gap-3 text-slate-400">
-            <Spinner /> <span className="text-sm">Loading details…</span>
+            <Spinner /> <span className="text-sm">{t("promo.detailModal.loading")}</span>
           </div>
         ) : (
           <>
@@ -337,55 +341,59 @@ function DetailModal({ couponId, onClose, onDisable, onEdit, isDisabling }) {
                   </svg>
                 </div>
                 <div>
-                  <p className="text-xs text-slate-500">Promo Code</p>
+                  <p className="text-xs text-slate-500">{t("promo.detailModal.codeLabel")}</p>
                   <p className="text-xl font-bold text-blue-900">{promo.code}</p>
                 </div>
               </div>
               <button onClick={copy}
                 className="flex items-center gap-1.5 bg-blue-900 hover:bg-blue-800 text-white text-xs font-semibold px-3 py-2 rounded-lg transition-colors">
                 <CopyIcon />
-                {copied ? "Copied!" : "Copy Code"}
+                {copied ? t("promo.detailModal.copied") : t("promo.detailModal.copyCode")}
               </button>
             </div>
 
             <div className="grid grid-cols-2 gap-x-6 gap-y-4 text-sm mb-5">
               {promo.title && (
                 <div>
-                  <p className="text-xs text-slate-400 font-medium mb-0.5">Title</p>
+                  <p className="text-xs text-slate-400 font-medium mb-0.5">{t("promo.formModal.title")}</p>
                   <p className="text-slate-700">{promo.title}</p>
                 </div>
               )}
               <div>
-                <p className="text-xs text-slate-400 font-medium mb-0.5">Description</p>
+                <p className="text-xs text-slate-400 font-medium mb-0.5">{t("promo.detailModal.description")}</p>
                 <p className="text-slate-700">{promo.description}</p>
               </div>
               <div>
-                <p className="text-xs text-slate-400 font-medium mb-0.5">Status</p>
+                <p className="text-xs text-slate-400 font-medium mb-0.5">{t("promo.detailModal.status")}</p>
                 <StatusBadge status={promo.status} />
               </div>
               <div>
-                <p className="text-xs text-slate-400 font-medium mb-0.5">Discount</p>
+                <p className="text-xs text-slate-400 font-medium mb-0.5">{t("promo.detailModal.discount")}</p>
                 <p className="text-slate-700">
-                  {promo.discountType === "percentage" ? `${promo.discountValue}% off` : `$${promo.discountValue} off`}
+                  {promo.discountType === "percentage"
+                    ? t("promo.detailModal.percentageOff", { value: promo.discountValue })
+                    : t("promo.detailModal.fixedOff", { value: promo.discountValue })}
                 </p>
               </div>
               {promo.maxDiscount && (
                 <div>
-                  <p className="text-xs text-slate-400 font-medium mb-0.5">Max Discount</p>
+                  <p className="text-xs text-slate-400 font-medium mb-0.5">{t("promo.detailModal.maxDiscount")}</p>
                   <p className="text-slate-700">${promo.maxDiscount}</p>
                 </div>
               )}
               <div>
-                <p className="text-xs text-slate-400 font-medium mb-0.5">Min Order</p>
-                <p className="text-slate-700">{promo.minOrder ? `$${promo.minOrder}` : "No minimum"}</p>
+                <p className="text-xs text-slate-400 font-medium mb-0.5">{t("promo.detailModal.minOrder")}</p>
+                <p className="text-slate-700">{promo.minOrder ? `$${promo.minOrder}` : t("promo.detailModal.noMinimum")}</p>
               </div>
               <div>
-                <p className="text-xs text-slate-400 font-medium mb-0.5">Max Uses / User</p>
+                <p className="text-xs text-slate-400 font-medium mb-0.5">{t("promo.detailModal.maxUsesPerUser")}</p>
                 <p className="text-slate-700">{promo.maxUsesPerUser}</p>
               </div>
               <div>
-                <p className="text-xs text-slate-400 font-medium mb-0.5">Usage</p>
-                <p className="text-slate-700 mb-1">{promo.used} / {promo.usageLimit} used</p>
+                <p className="text-xs text-slate-400 font-medium mb-0.5">{t("promo.detailModal.usage")}</p>
+                <p className="text-slate-700 mb-1">
+                  {t("promo.detailModal.usedLabel", { used: promo.used, limit: promo.usageLimit })}
+                </p>
                 {promo.usageLimitRaw && (
                   <div className="h-1.5 w-40 rounded-full bg-slate-100">
                     <div className="h-full rounded-full bg-blue-600" style={{ width: `${pct}%` }} />
@@ -394,20 +402,20 @@ function DetailModal({ couponId, onClose, onDisable, onEdit, isDisabling }) {
               </div>
               {promo.usageLimitRaw && (
                 <div>
-                  <p className="text-xs text-slate-400 font-medium mb-0.5">Usage Rate</p>
+                  <p className="text-xs text-slate-400 font-medium mb-0.5">{t("promo.detailModal.usageRate")}</p>
                   <p className="text-slate-700">{pct}%</p>
                 </div>
               )}
               <div>
-                <p className="text-xs text-slate-400 font-medium mb-0.5">Valid From</p>
+                <p className="text-xs text-slate-400 font-medium mb-0.5">{t("promo.detailModal.validFrom")}</p>
                 <p className="text-slate-700">{promo.validFrom}</p>
               </div>
               <div>
-                <p className="text-xs text-slate-400 font-medium mb-0.5">Valid Until</p>
+                <p className="text-xs text-slate-400 font-medium mb-0.5">{t("promo.detailModal.validUntil")}</p>
                 <p className="text-slate-700">{promo.validUntil}</p>
               </div>
               <div>
-                <p className="text-xs text-slate-400 font-medium mb-0.5">Coupon ID</p>
+                <p className="text-xs text-slate-400 font-medium mb-0.5">{t("promo.detailModal.couponId")}</p>
                 <p className="text-slate-700 font-mono text-xs truncate">{promo.id}</p>
               </div>
             </div>
@@ -417,7 +425,7 @@ function DetailModal({ couponId, onClose, onDisable, onEdit, isDisabling }) {
                 onClick={() => { onEdit(promo); onClose(); }}
                 className="flex-1 bg-blue-900 hover:bg-blue-800 text-white text-sm font-semibold py-2.5 rounded-lg transition-colors"
               >
-                Edit
+                {t("promo.detailModal.edit")}
               </button>
               {promo.status !== "disabled" && (
                 <button
@@ -426,7 +434,7 @@ function DetailModal({ couponId, onClose, onDisable, onEdit, isDisabling }) {
                   className="flex-1 bg-rose-600 hover:bg-rose-700 disabled:opacity-60 text-white text-sm font-semibold py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2"
                 >
                   {isDisabling && <Spinner />}
-                  Disable
+                  {t("promo.detailModal.disable")}
                 </button>
               )}
             </div>
@@ -440,6 +448,7 @@ function DetailModal({ couponId, onClose, onDisable, onEdit, isDisabling }) {
 // ─── Main Component ────────────────────────────────────────────────────────────
 
 export default function PromoCodeManagement() {
+  const { t } = useTranslation();
   const [statusFilter, setStatusFilter] = useState("");
   const [showCreate, setShowCreate] = useState(false);
   const [editPromo, setEditPromo] = useState(null);
@@ -457,10 +466,10 @@ export default function PromoCodeManagement() {
   const coupons = rawCoupons.map(mapCoupon);
 
   const filters = [
-    { label: "All", value: "" },
-    { label: "Active", value: "active" },
-    { label: "Expired", value: "expired" },
-    { label: "Disabled", value: "disabled" },
+    { label: t("promo.tabs.all"), value: "" },
+    { label: t("promo.tabs.active"), value: "active" },
+    { label: t("promo.tabs.expired"), value: "expired" },
+    { label: t("promo.tabs.disabled"), value: "disabled" },
   ];
 
   const stats = {
@@ -484,9 +493,9 @@ export default function PromoCodeManagement() {
     try {
       await createCoupon(body).unwrap();
       setShowCreate(false);
-      toast.success("Promo code created successfully!");
+      toast.success(t("promo.formModal.toastCreateSuccess"));
     } catch (err) {
-      toast.error(err?.data?.detail || err?.data?.code?.[0] || "Failed to create coupon.");
+      toast.error(err?.data?.detail || err?.data?.code?.[0] || t("promo.formModal.toastCreateFailed"));
     }
   };
 
@@ -494,9 +503,9 @@ export default function PromoCodeManagement() {
     try {
       await updateCoupon({ couponId: editPromo.id, ...body }).unwrap();
       setEditPromo(null);
-      toast.success("Coupon updated successfully!");
+      toast.success(t("promo.formModal.toastUpdateSuccess"));
     } catch (err) {
-      toast.error(err?.data?.detail || "Failed to update coupon.");
+      toast.error(err?.data?.detail || t("promo.formModal.toastUpdateFailed"));
     }
   };
 
@@ -504,9 +513,9 @@ export default function PromoCodeManagement() {
     try {
       await disableCoupon(couponId).unwrap();
       setDetailCouponId(null);
-      toast.success("Coupon disabled successfully.");
+      toast.success(t("promo.detailModal.toastDisableSuccess"));
     } catch (err) {
-      toast.error(err?.data?.detail || "Failed to disable coupon.");
+      toast.error(err?.data?.detail || t("promo.detailModal.toastDisableFailed"));
     }
   };
 
@@ -514,9 +523,9 @@ export default function PromoCodeManagement() {
     e.stopPropagation();
     try {
       await deleteCoupon(couponId).unwrap();
-      toast.success("Coupon deleted.");
+      toast.success(t("promo.detailModal.toastDeleteSuccess"));
     } catch (err) {
-      toast.error(err?.data?.detail || "Failed to delete coupon.");
+      toast.error(err?.data?.detail || t("promo.detailModal.toastDeleteFailed"));
     }
   };
 
@@ -524,9 +533,9 @@ export default function PromoCodeManagement() {
     e.stopPropagation();
     try {
       await disableCoupon(couponId).unwrap();
-      toast.success("Coupon disabled.");
+      toast.success(t("promo.detailModal.toastDisableSuccess"));
     } catch (err) {
-      toast.error(err?.data?.detail || "Failed to disable coupon.");
+      toast.error(err?.data?.detail || t("promo.detailModal.toastDisableFailed"));
     }
   };
 
@@ -535,21 +544,21 @@ export default function PromoCodeManagement() {
     navigator.clipboard.writeText(code).catch(() => {});
     setCopiedId(id);
     setTimeout(() => setCopiedId(null), 1500);
-    toast.info(`Code "${code}" copied!`);
+    toast.info(t("promo.table.copiedToast", { code }));
   };
 
   // ── render ──
 
   return (
     <div className="min-h-screen bg-slate-50 p-8 font-sans">
-   
+
 
 
       {/* Header */}
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-slate-800 tracking-tight">Promo Code Management</h1>
-          <p className="text-sm text-slate-500 mt-0.5">Create and manage promotional codes for your ride-share app</p>
+          <h1 className="text-2xl font-bold text-slate-800 tracking-tight">{t("promo.title")}</h1>
+          <p className="text-sm text-slate-500 mt-0.5">{t("promo.subtitle")}</p>
         </div>
         <button
           onClick={() => setShowCreate(true)}
@@ -558,19 +567,19 @@ export default function PromoCodeManagement() {
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 5v14M5 12h14" />
           </svg>
-          Create Promo Code
+          {t("promo.createBtn")}
         </button>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <StatCard label="Total Promo Codes" value={stats.total} iconBg="bg-blue-50"
+        <StatCard label={t("promo.stats.total")} value={stats.total} iconBg="bg-blue-50"
           icon={<svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a2 2 0 012-2z" /></svg>} />
-        <StatCard label="Active Codes" value={stats.active} iconBg="bg-emerald-50"
+        <StatCard label={t("promo.stats.active")} value={stats.active} iconBg="bg-emerald-50"
           icon={<svg className="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>} />
-        <StatCard label="Total Usage" value={stats.totalUsage} iconBg="bg-violet-50"
+        <StatCard label={t("promo.stats.usage")} value={stats.totalUsage} iconBg="bg-violet-50"
           icon={<svg className="w-5 h-5 text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>} />
-        <StatCard label="Avg Usage Rate" value={`${stats.avgRate}%`} iconBg="bg-amber-50"
+        <StatCard label={t("promo.stats.avgRate")} value={`${stats.avgRate}%`} iconBg="bg-amber-50"
           icon={<svg className="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>} />
       </div>
 
@@ -592,22 +601,30 @@ export default function PromoCodeManagement() {
         <div className="overflow-x-auto">
           {isLoading ? (
             <div className="flex items-center justify-center py-16 gap-3 text-slate-400">
-              <Spinner /> <span className="text-sm">Loading coupons…</span>
+              <Spinner /> <span className="text-sm">{t("promo.table.loading")}</span>
             </div>
           ) : isError ? (
-            <p className="text-center py-16 text-rose-500 text-sm">Failed to load coupons.</p>
+            <p className="text-center py-16 text-rose-500 text-sm">{t("promo.table.failed")}</p>
           ) : (
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-100">
-                  {["Code", "Description", "Discount", "Usage", "Valid Period", "Status", "Actions"].map((h) => (
+                  {[
+                    t("promo.table.code"),
+                    t("promo.table.description"),
+                    t("promo.table.discount"),
+                    t("promo.table.usage"),
+                    t("promo.table.validPeriod"),
+                    t("promo.table.status"),
+                    t("promo.table.actions"),
+                  ].map((h) => (
                     <th key={h} className="text-left text-xs font-semibold text-slate-400 uppercase tracking-wider px-5 py-3">{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
                 {coupons.length === 0 && (
-                  <tr><td colSpan="7" className="text-center py-10 text-slate-400 text-sm">No promo codes found.</td></tr>
+                  <tr><td colSpan="7" className="text-center py-10 text-slate-400 text-sm">{t("promo.table.noPromo")}</td></tr>
                 )}
                 {coupons.map((promo) => (
                   <tr key={promo.id} className="hover:bg-slate-50/70 transition-colors cursor-pointer"
@@ -641,21 +658,21 @@ export default function PromoCodeManagement() {
                     <td className="px-5 py-4" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center gap-2">
                         <button onClick={() => setEditPromo(promo)}
-                          className="text-slate-400 hover:text-blue-600 transition-colors p-1 rounded" title="Edit">
+                          className="text-slate-400 hover:text-blue-600 transition-colors p-1 rounded" title={t("promo.detailModal.edit")}>
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                           </svg>
                         </button>
                         {promo.status !== "disabled" && (
                           <button onClick={(e) => handleDisableRow(promo.id, e)}
-                            className="text-slate-400 hover:text-amber-500 transition-colors p-1 rounded" title="Disable">
+                            className="text-slate-400 hover:text-amber-500 transition-colors p-1 rounded" title={t("promo.detailModal.disable")}>
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                             </svg>
                           </button>
                         )}
                         <button onClick={(e) => handleDelete(promo.id, e)}
-                          className="text-slate-400 hover:text-rose-500 transition-colors p-1 rounded" title="Delete">
+                          className="text-slate-400 hover:text-rose-500 transition-colors p-1 rounded" title={t("common.delete")}>
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                           </svg>
@@ -671,8 +688,11 @@ export default function PromoCodeManagement() {
 
         {data?.pagination && (
           <div className="px-5 py-3 border-t border-slate-100 text-xs text-slate-400">
-            Showing {rawCoupons.length} of {data.pagination.total} coupons
-            &nbsp;·&nbsp; Page {data.pagination.page}
+            {t("promo.table.showing", {
+              count: rawCoupons.length,
+              total: data.pagination.total,
+              page: data.pagination.page,
+            })}
           </div>
         )}
       </div>
