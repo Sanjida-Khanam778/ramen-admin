@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   useGetComplaintsQuery,
@@ -7,6 +8,7 @@ import {
 } from "../../Api/couponApi"; // adjust path as needed
 
 function StatusBadge({ status, size = "md" }) {
+  const { t } = useTranslation();
   const map = {
     open: "bg-rose-50 text-rose-600 border border-rose-200",
     in_progress: "bg-amber-50 text-amber-600 border border-amber-200",
@@ -17,11 +19,15 @@ function StatusBadge({ status, size = "md" }) {
   };
   const sizeCls =
     size === "sm" ? "text-[11px] px-2 py-0.5" : "text-xs px-2.5 py-1";
+  const statusKey =
+    status === "in_progress" || status === "in review" || status === "in_review"
+      ? "inProgress"
+      : status || "open";
   return (
     <span
       className={`${sizeCls} font-semibold rounded-full capitalize whitespace-nowrap ${map[status] || map.open}`}
     >
-      {(status || "open").replace("_", " ")}
+      {t(`complaint.status.${statusKey}`, (status || "open").replace("_", " "))}
     </span>
   );
 }
@@ -79,6 +85,7 @@ function initials(name) {
 }
 
 export default function ComplaintDetail() {
+  const { t } = useTranslation();
   const { complaintId } = useParams();
   const navigate = useNavigate();
 
@@ -135,7 +142,7 @@ export default function ComplaintDetail() {
   const submit = async (status) => {
     if (!ticket) return;
     if (status !== "resolved" && !response.trim()) {
-      setActionError("Write a response before sending.");
+      setActionError(t("complaint.detail.errorEmptyResponse"));
       return;
     }
     setActionError("");
@@ -146,7 +153,9 @@ export default function ComplaintDetail() {
         response_message: response.trim() || ticket.response_message || "",
       }).unwrap();
       setToastMsg(
-        status === "resolved" ? "Ticket marked as resolved." : "Reply sent.",
+        status === "resolved"
+          ? t("complaint.detail.toastResolved")
+          : t("complaint.detail.toastReply"),
       );
       if (status === "resolved") setHasReplied(true);
     } catch (err) {
@@ -155,7 +164,7 @@ export default function ComplaintDetail() {
         (err?.data && typeof err.data === "object"
           ? Object.values(err.data).flat().join(" ")
           : "") ||
-        "Could not update this ticket. Try again.";
+        t("complaint.detail.errorSubmit");
       setActionError(errorMsg);
     }
   };
@@ -170,7 +179,7 @@ export default function ComplaintDetail() {
     return (
       <div className="min-h-screen bg-slate-50 p-8 font-sans flex items-center justify-center">
         <div className="flex items-center gap-3 text-slate-400">
-          <Spinner /> <span className="text-sm">Loading complaint…</span>
+          <Spinner /> <span className="text-sm">{t("complaint.detail.loading")}</span>
         </div>
       </div>
     );
@@ -196,11 +205,11 @@ export default function ComplaintDetail() {
               d="M15 19l-7-7 7-7"
             />
           </svg>
-          Back to complaints
+          {t("complaint.detail.backBtn")}
         </button>
         <div className="bg-white rounded-2xl border border-slate-200 p-10 text-center">
           <p className="text-slate-500 text-sm">
-            This complaint couldn't be found — it may have been removed.
+            {t("complaint.detail.failed")}
           </p>
         </div>
       </div>
@@ -256,7 +265,7 @@ export default function ComplaintDetail() {
             d="M15 19l-7-7 7-7"
           />
         </svg>
-        Back to complaints
+        {t("complaint.detail.backBtn")}
       </button>
 
       {/* Page header */}
@@ -269,11 +278,11 @@ export default function ComplaintDetail() {
             <StatusBadge status={ticket.status} />
           </div>
           <p className="text-sm text-slate-500">
-            Ticket{" "}
+            {t("complaint.detail.ticketLabel")}{" "}
             <span className="font-mono text-slate-600">
               {ticket.id.slice(0, 8)}
             </span>{" "}
-            · Submitted {formatDateTime(ticket.created_at)}
+            · {t("complaint.detail.submitted", { date: formatDateTime(ticket.created_at) })}
           </p>
         </div>
         <CategoryTag category={ticket.category} />
@@ -286,7 +295,7 @@ export default function ComplaintDetail() {
           {/* Original message */}
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
             <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
-              Complaint Message
+              {t("complaint.detail.messageTitle")}
             </p>
             <div className="flex gap-3">
               <div className="w-9 h-9 rounded-full bg-blue-900 text-white text-xs font-bold flex items-center justify-center shrink-0">
@@ -301,7 +310,9 @@ export default function ComplaintDetail() {
           {/* Admin response composer */}
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
             <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">
-              {isResolved ? "Resolution Notes" : "Admin Response"}
+              {isResolved
+                ? t("complaint.detail.responseTitleResolved")
+                : t("complaint.detail.responseTitleAdmin")}
             </p>
 
             {ticket.response_message && isResolved && (
@@ -332,7 +343,7 @@ export default function ComplaintDetail() {
               <>
                 <textarea
                   rows={5}
-                  placeholder="Type your response to the complaint..."
+                  placeholder={t("complaint.detail.responsePlaceholder")}
                   value={response}
                   onChange={(e) => {
                     setResponse(e.target.value);
@@ -367,7 +378,7 @@ export default function ComplaintDetail() {
                         />
                       </svg>
                     )}
-                    Send Reply
+                    {t("complaint.detail.sendReply")}
                   </button>
                   {/* <button
                     onClick={() => submit("resolved")}
@@ -385,7 +396,7 @@ export default function ComplaintDetail() {
 
             {isResolved && (
               <p className="text-xs text-slate-400">
-                This ticket is closed. Resolution notes are shown above.
+                {t("complaint.detail.resolvedLabel")}
               </p>
             )}
           </div>
@@ -396,7 +407,7 @@ export default function ComplaintDetail() {
           {/* User card */}
           <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
             <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">
-              Submitted By
+              {t("complaint.detail.sidebarTitle")}
             </p>
             <div className="flex items-center gap-3 mb-4">
               <div className="w-11 h-11 rounded-full bg-blue-900 text-white font-bold flex items-center justify-center shrink-0">
@@ -404,20 +415,20 @@ export default function ComplaintDetail() {
               </div>
               <div className="min-w-0">
                 <p className="font-semibold text-slate-800 truncate">
-                  {user.name || "Unnamed user"}
+                  {user.name || t("complaint.detail.unnamed")}
                 </p>
                 <p className="text-xs text-slate-400 truncate">{user.email}</p>
               </div>
             </div>
             <div className="space-y-2 text-sm border-t border-slate-100 pt-3">
               <div className="flex justify-between">
-                <span className="text-slate-400">Phone</span>
+                <span className="text-slate-400">{t("complaint.detail.phone")}</span>
                 <span className="text-slate-700 font-medium">
                   {user.phone_number || "—"}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Total tickets</span>
+                <span className="text-slate-400">{t("complaint.detail.totalTickets")}</span>
                 <span className="text-slate-700 font-medium">
                   {isHistoryLoading ? "…" : (historyData?.total_tickets ?? "—")}
                 </span>
@@ -425,56 +436,7 @@ export default function ComplaintDetail() {
             </div>
           </div>
 
-          {/* History timeline */}
-          {/* <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4">
-              Complaint History
-            </p>
-
-            {isHistoryLoading ? (
-              <div className="flex items-center gap-2 text-slate-400 py-4">
-                <Spinner className="w-4 h-4 text-slate-400" />
-                <span className="text-xs">Loading history…</span>
-              </div>
-            ) : otherTickets.length === 0 ? (
-              <p className="text-xs text-slate-400 py-2">
-                No previous tickets from this user.
-              </p>
-            ) : (
-              <ol className="relative space-y-4 before:absolute before:left-[5px] before:top-1.5 before:bottom-1.5 before:w-px before:bg-slate-200">
-                {otherTickets.map((h) => (
-                  <li key={h.id} className="relative pl-5">
-                    <span
-                      className={`absolute left-0 top-1.5 w-2.5 h-2.5 rounded-full ring-2 ring-white ${
-                        h.status === "resolved"
-                          ? "bg-emerald-500"
-                          : h.status === "open"
-                            ? "bg-rose-400"
-                            : "bg-amber-400"
-                      }`}
-                    />
-                    <button
-                      onClick={() => navigate(`/complaints/${h.id}`)}
-                      className="text-left w-full group"
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="text-sm font-semibold text-slate-700 group-hover:text-blue-700 transition-colors truncate">
-                          {h.subject}
-                        </p>
-                        <StatusBadge status={h.status} size="sm" />
-                      </div>
-                      <p className="text-xs text-slate-400 mt-0.5">
-                        {formatDateTime(h.created_at)}
-                      </p>
-                      <p className="text-xs text-slate-500 mt-1 line-clamp-2">
-                        {h.message}
-                      </p>
-                    </button>
-                  </li>
-                ))}
-              </ol>
-            )}
-          </div> */}
+         
         </div>
       </div>
     </div>
