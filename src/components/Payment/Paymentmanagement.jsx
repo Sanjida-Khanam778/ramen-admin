@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   useGetWithdrawalsQuery,
   useApproveWithdrawalMutation,
@@ -15,6 +16,7 @@ function formatDate(iso) {
 // ─── Status Badge ─────────────────────────────────────────────────────────────
 
 function StatusBadge({ status }) {
+  const { t } = useTranslation();
   const map = {
     pending:    "bg-amber-50 text-amber-700 border border-amber-200",
     processing: "bg-violet-50 text-violet-700 border border-violet-200",
@@ -27,7 +29,7 @@ function StatusBadge({ status }) {
         map[status] || map.pending
       }`}
     >
-      {status}
+      {t(`payment.tabs.${status}`, status)}
     </span>
   );
 }
@@ -35,6 +37,7 @@ function StatusBadge({ status }) {
 // ─── Transaction Modal ────────────────────────────────────────────────────────
 
 function TransactionModal({ payment, onClose, onApprove, onCancel, loading }) {
+  const { t } = useTranslation();
   const [rejectReason, setRejectReason] = useState("");
   const [showRejectInput, setShowRejectInput] = useState(false);
 
@@ -48,7 +51,7 @@ function TransactionModal({ payment, onClose, onApprove, onCancel, loading }) {
         {/* Header */}
         <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-slate-100">
           <h2 className="text-lg font-bold text-slate-800">
-            Withdrawal Details
+            {t("payment.detailModal.title")}
           </h2>
           <button
             onClick={onClose}
@@ -64,32 +67,32 @@ function TransactionModal({ payment, onClose, onApprove, onCancel, loading }) {
         <div className="px-6 py-5 space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-xs text-slate-400 mb-0.5">Withdrawal ID</p>
+              <p className="text-xs text-slate-400 mb-0.5">{t("payment.detailModal.id")}</p>
               <p className="font-semibold text-slate-800 text-xs break-all">{payment.id}</p>
             </div>
             <div>
-              <p className="text-xs text-slate-400 mb-0.5">Date</p>
+              <p className="text-xs text-slate-400 mb-0.5">{t("payment.detailModal.date")}</p>
               <p className="font-semibold text-slate-800">{formatDate(payment.created_at)}</p>
             </div>
             <div>
-              <p className="text-xs text-slate-400 mb-0.5">Status</p>
+              <p className="text-xs text-slate-400 mb-0.5">{t("payment.detailModal.status")}</p>
               <StatusBadge status={payment.status} />
             </div>
             <div>
-              <p className="text-xs text-slate-400 mb-0.5">Driver</p>
+              <p className="text-xs text-slate-400 mb-0.5">{t("payment.detailModal.driver")}</p>
               <p className="font-semibold text-slate-800">
                 {payment.driver_name || payment.driver_email}
               </p>
             </div>
             <div>
-              <p className="text-xs text-slate-400 mb-0.5">Total Amount</p>
+              <p className="text-xs text-slate-400 mb-0.5">{t("payment.detailModal.amount")}</p>
               <p className="font-semibold text-slate-800">
                 ${parseFloat(payment.amount).toFixed(2)}
               </p>
             </div>
             {payment.payout_method && (
               <div>
-                <p className="text-xs text-slate-400 mb-0.5">Payout Method</p>
+                <p className="text-xs text-slate-400 mb-0.5">{t("payment.detailModal.method")}</p>
                 <p className="font-semibold text-slate-800 capitalize">
                   {payment.payout_method}
                 </p>
@@ -97,7 +100,7 @@ function TransactionModal({ payment, onClose, onApprove, onCancel, loading }) {
             )}
             {payment.description && (
               <div className="col-span-2">
-                <p className="text-xs text-slate-400 mb-0.5">Description</p>
+                <p className="text-xs text-slate-400 mb-0.5">{t("payment.detailModal.description")}</p>
                 <p className="text-slate-700 text-sm">{payment.description}</p>
               </div>
             )}
@@ -109,7 +112,7 @@ function TransactionModal({ payment, onClose, onApprove, onCancel, loading }) {
               {showRejectInput && (
                 <input
                   type="text"
-                  placeholder="Rejection reason (optional)"
+                  placeholder={t("payment.detailModal.rejectReasonPlaceholder")}
                   value={rejectReason}
                   onChange={(e) => setRejectReason(e.target.value)}
                   className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-rose-300"
@@ -121,14 +124,14 @@ function TransactionModal({ payment, onClose, onApprove, onCancel, loading }) {
                   onClick={() => onApprove(payment.id)}
                   className="flex-1 bg-blue-900 hover:bg-blue-800 disabled:opacity-60 text-white text-sm font-semibold py-2.5 rounded-lg transition-colors"
                 >
-                  {loading ? "Processing…" : "Confirm Payment"}
+                  {loading ? t("payment.detailModal.processing") : t("payment.detailModal.confirmPay")}
                 </button>
                 {!showRejectInput ? (
                   <button
                     onClick={() => setShowRejectInput(true)}
                     className="flex-1 bg-rose-600 hover:bg-rose-700 text-white text-sm font-semibold py-2.5 rounded-lg transition-colors"
                   >
-                    Reject Payment
+                    {t("payment.detailModal.rejectPay")}
                   </button>
                 ) : (
                   <button
@@ -136,7 +139,7 @@ function TransactionModal({ payment, onClose, onApprove, onCancel, loading }) {
                     onClick={handleCancel}
                     className="flex-1 bg-rose-600 hover:bg-rose-700 disabled:opacity-60 text-white text-sm font-semibold py-2.5 rounded-lg transition-colors"
                   >
-                    {loading ? "Processing…" : "Confirm Reject"}
+                    {loading ? t("payment.detailModal.processing") : t("payment.detailModal.confirmReject")}
                   </button>
                 )}
               </div>
@@ -150,19 +153,20 @@ function TransactionModal({ payment, onClose, onApprove, onCancel, loading }) {
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
-const TABS = ["All", "Pending", "Processing", "Paid", "Cancelled"];
+const TAB_KEYS = ["all", "pending", "processing", "paid", "cancelled"];
 
-// Map tab label → API status param
+// Map tab key → API status param
 const TAB_STATUS = {
-  All:        undefined,
-  Pending:    "pending",
-  Processing: "processing",
-  Paid:       "paid",
-  Cancelled:  "cancelled",
+  all:        undefined,
+  pending:    "pending",
+  processing: "processing",
+  paid:       "paid",
+  cancelled:  "cancelled",
 };
 
 export default function PaymentManagement() {
-  const [activeTab, setActiveTab] = useState("All");
+  const { t } = useTranslation();
+  const [activeTab, setActiveTab] = useState("all");
   const [selected, setSelected]   = useState(null);
   const [actionError, setActionError] = useState("");
 
@@ -196,7 +200,7 @@ export default function PaymentManagement() {
       const msg =
         err?.data?.detail ||
         err?.data?.message ||
-        "Failed to approve. Please try again.";
+        t("payment.detailModal.toastApproveFailed");
       setActionError(msg);
     }
   };
@@ -210,20 +214,29 @@ export default function PaymentManagement() {
       const msg =
         err?.data?.detail ||
         err?.data?.message ||
-        "Failed to cancel. Please try again.";
+        t("payment.detailModal.toastCancelFailed");
       setActionError(msg);
     }
   };
+
+  const tableHeaders = [
+    t("payment.table.id"),
+    t("payment.detailModal.driver"),
+    t("payment.table.amount"),
+    t("payment.table.method"),
+    t("payment.table.status"),
+    t("payment.table.actions"),
+  ];
 
   return (
     <div className="min-h-screen bg-slate-50 p-8 font-sans">
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-slate-800 tracking-tight">
-          Withdraw Management
+          {t("payment.title")}
         </h1>
         <p className="text-sm text-slate-500 mt-0.5">
-          Manage ride payments and driver earnings
+          {t("payment.subtitle")}
         </p>
       </div>
 
@@ -237,17 +250,17 @@ export default function PaymentManagement() {
 
       {/* Filter Tabs */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-3 mb-4 flex gap-1.5 flex-wrap">
-        {TABS.map((tab) => (
+        {TAB_KEYS.map((tabKey) => (
           <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
+            key={tabKey}
+            onClick={() => setActiveTab(tabKey)}
             className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-colors ${
-              activeTab === tab
+              activeTab === tabKey
                 ? "bg-blue-900 text-white"
                 : "text-slate-600 hover:bg-slate-100"
             }`}
           >
-            {tab}
+            {t(`payment.tabs.${tabKey}`, tabKey)}
           </button>
         ))}
       </div>
@@ -258,7 +271,7 @@ export default function PaymentManagement() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-100">
-                {["Withdrawal ID", "Driver", "Payment Amount", "Payout Method", "Status", "Actions"].map((h) => (
+                {tableHeaders.map((h) => (
                   <th
                     key={h}
                     className="text-left text-xs font-semibold text-slate-400 uppercase tracking-wider px-5 py-3 whitespace-nowrap"
@@ -272,7 +285,7 @@ export default function PaymentManagement() {
               {(isLoading || isFetching) && (
                 <tr>
                   <td colSpan="6" className="text-center py-10 text-slate-400 text-sm">
-                    Loading…
+                    {t("payment.table.loading")}
                   </td>
                 </tr>
               )}
@@ -280,7 +293,7 @@ export default function PaymentManagement() {
               {isError && !isLoading && (
                 <tr>
                   <td colSpan="6" className="text-center py-10 text-rose-400 text-sm">
-                    Failed to load withdrawals.
+                    {t("payment.table.failed")}
                   </td>
                 </tr>
               )}
@@ -288,7 +301,7 @@ export default function PaymentManagement() {
               {!isLoading && !isFetching && !isError && withdrawals.length === 0 && (
                 <tr>
                   <td colSpan="6" className="text-center py-10 text-slate-400 text-sm">
-                    No withdrawals found.
+                    {t("payment.table.noPayments")}
                   </td>
                 </tr>
               )}
@@ -320,7 +333,7 @@ export default function PaymentManagement() {
                       <button
                         onClick={() => { setActionError(""); setSelected(w); }}
                         className="text-slate-400 hover:text-blue-600 transition-colors p-1 rounded"
-                        title="View Details"
+                        title={t("payment.detailModal.title")}
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -334,7 +347,7 @@ export default function PaymentManagement() {
                           onClick={() => handleApprove(w.id)}
                           disabled={mutating}
                           className="text-slate-400 hover:text-emerald-600 disabled:opacity-40 transition-colors p-1 rounded"
-                          title="Confirm Payment"
+                          title={t("payment.detailModal.confirmPay")}
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
@@ -348,7 +361,7 @@ export default function PaymentManagement() {
                           onClick={() => handleCancel({ requestId: w.id, rejection_reason: "" })}
                           disabled={mutating}
                           className="text-slate-400 hover:text-rose-500 disabled:opacity-40 transition-colors p-1 rounded"
-                          title="Reject Payment"
+                          title={t("payment.detailModal.rejectPay")}
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
