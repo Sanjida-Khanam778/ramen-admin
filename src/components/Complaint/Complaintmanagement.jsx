@@ -13,8 +13,12 @@ function RoleBadge({ role }) {
     driver: "bg-sky-50 text-sky-600 border border-sky-200",
   };
   return (
-    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full capitalize ${map[role] || map.passenger}`}>
-      {role ? t(`overview.roles.${role}`, role) : t("overview.roles.passenger", "user")}
+    <span
+      className={`text-xs font-semibold px-2 py-0.5 rounded-full capitalize ${map[role] || map.passenger}`}
+    >
+      {role
+        ? t(`overview.roles.${role}`, role)
+        : t("overview.roles.passenger", "user")}
     </span>
   );
 }
@@ -33,7 +37,9 @@ function StatusBadge({ status }) {
       ? "inProgress"
       : status || "open";
   return (
-    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full capitalize whitespace-nowrap ${map[status] || map.open}`}>
+    <span
+      className={`text-xs font-semibold px-2.5 py-1 rounded-full capitalize whitespace-nowrap ${map[status] || map.open}`}
+    >
       {t(`complaint.status.${statusKey}`, (status || "open").replace("_", " "))}
     </span>
   );
@@ -41,9 +47,24 @@ function StatusBadge({ status }) {
 
 function Spinner() {
   return (
-    <svg className="animate-spin w-5 h-5 text-blue-600" fill="none" viewBox="0 0 24 24">
-      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+    <svg
+      className="animate-spin w-5 h-5 text-blue-600"
+      fill="none"
+      viewBox="0 0 24 24"
+    >
+      <circle
+        className="opacity-25"
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        strokeWidth="4"
+      />
+      <path
+        className="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8v8H4z"
+      />
     </svg>
   );
 }
@@ -84,8 +105,14 @@ export default function ComplaintManagement() {
   const complaints = (data?.data ?? []).map(mapComplaint);
   const filtered = complaints.filter((c) => {
     if (filter === "All") return true;
-    if (filter === "In Review") return c.status === "in review" || c.status === "in_review" || c.status === "in_progress";
-    if (filter === "Resolved") return c.status === "resolved" || c.status === "closed";
+    if (filter === "In Review")
+      return (
+        c.status === "in review" ||
+        c.status === "in_review" ||
+        c.status === "in_progress"
+      );
+    if (filter === "Resolved")
+      return c.status === "resolved" || c.status === "closed";
     return c.status === filter.toLowerCase();
   });
 
@@ -107,8 +134,12 @@ export default function ComplaintManagement() {
     <div className="min-h-screen bg-slate-50 p-8 font-sans">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-slate-800 tracking-tight">{t("complaint.title")}</h1>
-        <p className="text-sm text-slate-500 mt-0.5">{t("complaint.subtitle")}</p>
+        <h1 className="text-2xl font-bold text-slate-800 tracking-tight">
+          {t("complaint.title")}
+        </h1>
+        <p className="text-sm text-slate-500 mt-0.5">
+          {t("complaint.subtitle")}
+        </p>
       </div>
 
       {/* Filter Tabs */}
@@ -118,7 +149,9 @@ export default function ComplaintManagement() {
             key={f}
             onClick={() => setFilter(f)}
             className={`px-4 py-1.5 rounded-lg text-sm font-semibold transition-colors ${
-              filter === f ? "bg-blue-900 text-white" : "text-slate-600 hover:bg-slate-100"
+              filter === f
+                ? "bg-blue-900 text-white"
+                : "text-slate-600 hover:bg-slate-100"
             }`}
           >
             {t(`complaint.tabs.${TAB_TRANSLATION_KEY[f]}`, f)}
@@ -131,10 +164,13 @@ export default function ComplaintManagement() {
         <div className="overflow-x-auto">
           {isLoading ? (
             <div className="flex items-center justify-center py-16 gap-3 text-slate-400">
-              <Spinner /> <span className="text-sm">{t("complaint.table.loading")}</span>
+              <Spinner />{" "}
+              <span className="text-sm">{t("complaint.table.loading")}</span>
             </div>
           ) : isError ? (
-            <p className="text-center py-16 text-rose-500 text-sm">{t("complaint.table.failed")}</p>
+            <p className="text-center py-16 text-rose-500 text-sm">
+              {t("complaint.table.failed")}
+            </p>
           ) : (
             <table className="w-full text-sm">
               <thead>
@@ -147,7 +183,10 @@ export default function ComplaintManagement() {
                     t("complaint.table.status"),
                     t("complaint.table.actions"),
                   ].map((h) => (
-                    <th key={h} className="text-left text-xs font-semibold text-slate-400 uppercase tracking-wider px-5 py-3 whitespace-nowrap">
+                    <th
+                      key={h}
+                      className="text-left text-xs font-semibold text-slate-400 uppercase tracking-wider px-5 py-3 whitespace-nowrap"
+                    >
                       {h}
                     </th>
                   ))}
@@ -156,7 +195,12 @@ export default function ComplaintManagement() {
               <tbody className="divide-y divide-slate-50">
                 {filtered.length === 0 && (
                   <tr>
-                    <td colSpan="6" className="text-center py-10 text-slate-400 text-sm">{t("complaint.table.noComplaints")}</td>
+                    <td
+                      colSpan="6"
+                      className="text-center py-10 text-slate-400 text-sm"
+                    >
+                      {t("complaint.table.noComplaints")}
+                    </td>
                   </tr>
                 )}
                 {filtered.map((c) => (
@@ -166,35 +210,77 @@ export default function ComplaintManagement() {
                     onClick={() => navigate(`/complaints/${c.id}`)}
                   >
                     <td className="px-5 py-4">
-                      <p className="font-semibold text-slate-800">{c.userName}</p>
+                      <p className="font-semibold text-slate-800">
+                        {c.userName}
+                      </p>
                       <p className="text-xs text-slate-400">{c.userEmail}</p>
                     </td>
-                    <td className="px-5 py-4 text-slate-700 whitespace-nowrap">{c.subject}</td>
+                    <td className="px-5 py-4 text-slate-700 whitespace-nowrap">
+                      {c.subject}
+                    </td>
                     <td className="px-5 py-4 text-slate-500 max-w-[260px]">
                       <span className="line-clamp-1">{c.message}</span>
                     </td>
-                    <td className="px-5 py-4 text-slate-600 whitespace-nowrap">{c.date}</td>
-                    <td className="px-5 py-4"><StatusBadge status={c.status} /></td>
-                    <td className="px-5 py-4" onClick={(e) => e.stopPropagation()}>
+                    <td className="px-5 py-4 text-slate-600 whitespace-nowrap">
+                      {c.date}
+                    </td>
+                    <td className="px-5 py-4">
+                      <StatusBadge status={c.status} />
+                    </td>
+                    <td
+                      className="px-5 py-4"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => navigate(`/complaints/${c.id}`)}
                           className="text-slate-400 hover:text-blue-600 transition-colors p-1 rounded"
-                          title={t("complaint.table.viewDetails", "View Details")}
+                          title={t(
+                            "complaint.table.viewDetails",
+                            "View Details",
+                          )}
                         >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                            />
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth="2"
+                              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                            />
                           </svg>
                         </button>
                         {c.status !== "resolved" && (
                           <button
                             onClick={(e) => quickResolve(c, e)}
                             className="text-slate-400 hover:text-emerald-600 transition-colors p-1 rounded"
-                            title={t("complaint.table.markResolved", "Mark as Resolved")}
+                            title={t(
+                              "complaint.table.markResolved",
+                              "Mark as Resolved",
+                            )}
                           >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"/>
+                            <svg
+                              className="w-4 h-4"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2.5"
+                                d="M5 13l4 4L19 7"
+                              />
                             </svg>
                           </button>
                         )}
